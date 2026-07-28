@@ -6,6 +6,7 @@ use App\Core\Config;
 use App\Core\Env;
 use App\Core\Request;
 use App\Core\Router;
+use App\Core\Session;
 
 Env::load(__DIR__ . '/.env');
 Config::load(__DIR__ . '/config');
@@ -19,7 +20,7 @@ if (config('app.debug')) {
     ini_set('display_errors', '0');
 }
 
-session_start();
+Session::start();
 
 /** @var Router $router */
 $router = require __DIR__ . '/routes/web.php';

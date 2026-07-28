@@ -7,8 +7,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | Faz | Konu | Durum |
 |---|---|---|
 | 1 | Proje Altyapısı | ✅ Tamamlandı |
-| 2 | Admin Paneli | ⏳ Onay bekleniyor |
-| 3 | Lisans Sistemi | ⏳ Bekliyor |
+| 2 | Admin Paneli | ✅ Tamamlandı |
+| 3 | Lisans Sistemi | ⏳ Onay bekleniyor |
 | 4 | Soru Modülü | ⏳ Bekliyor |
 | 5 | Seçenek Sistemi | ⏳ Bekliyor |
 | 6 | Oyun Motoru | ⏳ Bekliyor |
@@ -34,13 +34,15 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 
 **Teslim:** Çalışan boş proje iskeleti. `/` ve `/admin/login` render ediliyor, `/health` veritabanı bağlantısını doğruluyor, `app/` `config/` `routes/` `storage/` `database/` klasörleri web'den erişime kapalı.
 
-## Faz 2 — Admin Paneli
+## Faz 2 — Admin Paneli ✅
 
-- [ ] Admin giriş (kimlik doğrulama mantığı)
-- [ ] Şifre değiştirme
-- [ ] Dashboard
-- [ ] Yetkilendirme
-- [ ] Session yönetimi
+- [x] Admin giriş (kimlik doğrulama mantığı) — `admins` tablosu, `password_hash`/`password_verify`, CSRF korumalı form
+- [x] Şifre değiştirme — mevcut şifre doğrulama + minimum 8 karakter kuralı
+- [x] Dashboard — `GET /admin/dashboard`
+- [x] Yetkilendirme — `AdminBaseController` route guard, oturumsuz erişimde `/admin/login`'e yönlendirme
+- [x] Session yönetimi — `App\Core\Session` (generic) + `App\Core\Auth` (admin auth semantiği), login'de session id regenerate
+
+**Teslim:** Migration (`admins` tablosu) ve seed script ile çalışan admin paneli. Giriş/çıkış, şifre değiştirme ve route koruması `ingilizce.test` üzerinde uçtan uca test edildi.
 
 ## Faz 3 — Lisans Sistemi
 

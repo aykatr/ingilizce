@@ -22,6 +22,15 @@ copy .env.example .env
 CREATE DATABASE ingilizce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
+Migration'ları çalıştırın ve varsayılan admin hesabını oluşturun:
+
+```bash
+php database/migrate.php migrate
+php database/seed.php
+```
+
+`ADMIN_PASSWORD` `.env` içinde boş bırakılırsa `database/seed.php` rastgele bir şifre üretir ve yalnızca bir kez terminale yazdırır — not alın. Migration'ı geri almak için `php database/migrate.php rollback` kullanılabilir (son batch'i geri alır).
+
 Proje kökü doğrudan Apache `DocumentRoot` olarak ayarlanmalıdır (örn. `ingilizce.test`). Tüm istekler `.htaccess` üzerinden `index.php` front controller'ına yönlendirilir.
 
 ## Klasör Yapısı
@@ -36,10 +45,24 @@ app/
 config/           Ortam bağımsız yapılandırma dosyaları (app.php, database.php)
 routes/           Route tanımları (web.php)
 database/
-  migrations/     Veritabanı migration dosyaları (Faz 2'den itibaren)
+  migrations/     Veritabanı migration dosyaları
+  migrate.php     Migration runner (migrate|rollback)
+  seed.php        Varsayılan admin hesabını oluşturan seed script
 storage/          Loglar, cache, kullanıcı yüklemeleri (web'den erişilemez)
 assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 ```
+
+## Admin Paneli
+
+| Route | Açıklama |
+|---|---|
+| `GET /admin/login` | Giriş formu |
+| `POST /admin/login` | Giriş işlemi |
+| `POST /admin/logout` | Çıkış işlemi |
+| `GET /admin/dashboard` | Panel (giriş gerektirir) |
+| `GET/POST /admin/password` | Şifre değiştirme (giriş gerektirir) |
+
+Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
 ## Sağlık Kontrolü
 

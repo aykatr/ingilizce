@@ -2,6 +2,7 @@
 
 use App\Core\Config;
 use App\Core\Env;
+use App\Core\Session;
 
 if (!function_exists('env')) {
     function env(string $key, mixed $default = null): mixed
@@ -35,6 +36,13 @@ if (!function_exists('e')) {
     function e(?string $value): string
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('csrf_field')) {
+    function csrf_field(): string
+    {
+        return '<input type="hidden" name="_csrf" value="' . e(Session::csrfToken()) . '">';
     }
 }
 

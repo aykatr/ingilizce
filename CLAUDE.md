@@ -16,7 +16,11 @@ Custom, hafif bir MVC iskeleti — Laravel/Symfony gibi bir framework kullanılm
 - **Model**: `App\Models\BaseModel`'den türetilir. `protected static string $table` tanımlayarak `all()/find()/where()/create()/update()/delete()` PDO yardımcı metodlarını miras alır. Tüm sorgular prepared statement kullanır — asla ham string birleştirme ile SQL yazmayın.
 - **View**: `App\Core\View::render()` nokta notasyonu kullanır (`admin.login` → `app/Views/admin/login.php`). Varsayılan layout `layouts/main.php`; `render($view, $data, null)` ile layout'suz render edilebilir.
 - **Config/Env**: `.env` dosyası `App\Core\Env` ile okunur, `config/*.php` dosyaları `App\Core\Config` ile yüklenir. Kod içinde `env()` değil, `config()` helper'ı tercih edilmeli (env sadece config dosyaları içinde kullanılır).
-- **Global helper fonksiyonları** `app/Core/helpers.php` içinde tanımlı ve composer'ın `autoload.files` ile otomatik yüklenir: `config()`, `env()`, `base_url()`, `asset()`, `e()` (XSS-safe escape), `dd()`.
+- **Global helper fonksiyonları** `app/Core/helpers.php` içinde tanımlı ve composer'ın `autoload.files` ile otomatik yüklenir: `config()`, `env()`, `base_url()`, `asset()`, `e()` (XSS-safe escape), `csrf_field()`, `dd()`.
+- **Session/Auth**: `App\Core\Session` genel session işlemlerini (get/put/flash/csrf) sağlar; `App\Core\Auth` bunun üzerine admin kimlik doğrulama semantiğini (`login()/logout()/check()/user()`) katar. `index.php` `Session::start()` çağırır — ham `session_start()` kullanmayın.
+- **Admin route koruması**: Giriş gerektiren admin controller'ları `App\Controllers\Admin\AdminBaseController`'dan türetilir; constructor `Auth::check()` değilse `/admin/login`'e yönlendirir ve `$this->admin` dizisini doldurur. Herkese açık admin route'ları (login/logout) düz `BaseController`'dan türetilir.
+- **CSRF**: State değiştiren tüm POST formlarında `<?= csrf_field() ?>` kullanılmalı, controller tarafında `Session::verifyCsrf($request->input('_csrf'))` ile doğrulanmalı. Bir view'da birden fazla form varsa (ör. admin layout'taki çıkış formu + sayfa formu) her ikisi de aynı token'ı üretir — tek bir token yeterlidir.
+- **Migration**: `database/migrations/*.php` her biri `App\Core\Migration`'ı extend eden anonim bir sınıf döndürür (`up(PDO)/down(PDO)`). Dosya adı `YYYY_MM_DD_HHMMSS_aciklama.php` formatında olmalı (sıralama buna göre yapılır). Çalıştırmak için `php database/migrate.php migrate`, geri almak için `php database/migrate.php rollback` (son batch'i geri alır).
 
 ## Güvenlik
 
