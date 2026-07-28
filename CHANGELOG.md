@@ -2,6 +2,34 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.4.0] - 2026-07-28
+
+Proje adı "Yippee Learning Platform" olarak netleşti (tam ürün spesifikasyonu iletildi); Faz 3 kapsamı bu spesifikasyona göre genişletildi ve Faz 1-3 kodu yeni mimariye göre revize edildi.
+
+### Değişti — Mimari
+
+- Repository Pattern + Service Layer eklendi: `App\Repositories\Contracts\*Interface`, `App\Repositories\{Admin,License,Setting}Repository`, `App\Services\{Auth,License,Setting}Service`
+- İş kuralları controller'lardan Service katmanına taşındı; kural ihlalleri `App\Services\Exceptions\ValidationException` ile controller'a bildirilir
+- `AuthController`, `PasswordController`, `LicenseController` artık ilgili Service üzerinden çalışıyor
+
+### Değişti — Frontend
+
+- Tüm admin ve public view'lar Bootstrap 5'e (CDN) geçirildi; özel CSS minimuma indirildi
+- Lisans listesinde QRCode.js ile istemci taraflı QR modalı eklendi (`assets/js/license-qr.js`, vanilla JS, jQuery yok)
+
+### Eklendi — Lisans Sistemi Genişletmesi
+
+- `licenses` tablosuna `code` (insan-okunur lisans kodu), `expires_at`, `first_activated_at`, `last_used_at`, `last_device`, `last_ip` alanları eklendi
+- Lisans durumu (Aktif/Pasif/Süresi Doldu) `LicenseService::statusLabel()` ile hesaplanıyor
+- `play.php` her doğrulamada aktivasyon/son kullanım/son cihaz/son IP bilgisini güncelliyor (`LicenseService::validateAndTrack()`)
+- `settings` tablosu ve `SettingService` — admin panelden değiştirilebilir site URL (`/admin/settings`), QR/oynama linki bu adresi kullanıyor
+- `play.php` token parametresi `token`'dan `t`'ye değiştirildi (spec ile uyum: `play.php?t=TOKEN`)
+- `Str::code()` helper — gruplu, karışıklık yaratmayan karakterlerden insan-okunur kod üretimi
+
+### Roadmap
+
+- Kullanıcının ilettiği "Ek Özellikler" listesi için Faz 11-16 eklendi (çoklu dil, kart paketleri, ilerleme/devam, PWA, analytics, medya optimizasyonu)
+
 ## [0.3.0] - 2026-07-28
 
 ### Eklendi

@@ -1,6 +1,6 @@
-# İngilizce Kart Oyunu
+# Yippee Learning Platform
 
-QR ile lisanslanan, kart tabanlı İngilizce öğrenme oyunu ve yönetim paneli.
+Fiziksel eğitim kartlarının üzerindeki QR kod ile çalışan çocuk eğitim platformu (İngilizce kart oyunu) ve yönetim paneli.
 
 ## Gereksinimler
 
@@ -8,6 +8,8 @@ QR ile lisanslanan, kart tabanlı İngilizce öğrenme oyunu ve yönetim paneli.
 - MySQL 8.x
 - Composer
 - Apache (`mod_rewrite`, `AllowOverride All`)
+
+Frontend bağımlılıkları (Bootstrap 5, QRCode.js) CDN üzerinden yüklenir — npm/build adımı yoktur.
 
 ## Kurulum
 
@@ -33,13 +35,25 @@ php database/seed.php
 
 Proje kökü doğrudan Apache `DocumentRoot` olarak ayarlanmalıdır (örn. `ingilizce.test`). Tüm istekler `.htaccess` üzerinden `index.php` front controller'ına yönlendirilir.
 
+## Mimari
+
+MVC + Repository Pattern + Service Layer:
+
+```
+Controller → Service → Repository (interface) → Model (table gateway) → Database (PDO)
+```
+
+Detaylar için [CLAUDE.md](CLAUDE.md).
+
 ## Klasör Yapısı
 
 ```
 app/
-  Controllers/    Controller sınıfları (BaseController üzerinden türetilir)
-  Models/         Model sınıfları (BaseModel üzerinden türetilir)
-  Core/           Framework çekirdeği: Router, Request, View, Config, Env, Database
+  Controllers/    Controller sınıfları (BaseController üzerinden türetilir) — yalnızca HTTP orkestrasyonu
+  Services/       İş kuralları (AuthService, LicenseService, SettingService)
+  Repositories/   Domain'e özel veri erişimi; arayüzler Repositories/Contracts altında
+  Models/         Tablo gateway'leri (BaseModel üzerinden türetilir)
+  Core/           Framework çekirdeği: Router, Request, View, Config, Env, Database, Session, Auth, Migration
   Helpers/        Yardımcı sınıflar (Str vb.)
   Views/          PHP view dosyaları (nokta notasyonu: home.index -> Views/home/index.php)
 config/           Ortam bağımsız yapılandırma dosyaları (app.php, database.php)
@@ -65,14 +79,15 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/licenses/create` | Yeni lisans formu (giriş gerektirir) |
 | `POST /admin/licenses` | Lisans oluştur (giriş gerektirir) |
 | `POST /admin/licenses/{id}/toggle` | Lisansı aktif/pasif yap (giriş gerektirir) |
+| `GET/POST /admin/settings` | Site URL ayarı (giriş gerektirir) |
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
 ## Lisans Sistemi
 
-Bir lisans oluşturulduğunda rastgele 32 karakterlik bir `token` üretilir ve oynama linki gösterilir: `http://ingilizce.test/play.php?token=<token>`. QR kod görseli sisteme dahil değildir — bu link istenirse harici bir araçla QR koduna dönüştürülebilir.
+Bir lisans oluşturulduğunda rastgele bir `token` (URL için, 32 karakter) ve insan-okunur bir `code` (ör. `K3F9-8H2M-QW7X`, referans/yazdırma için) üretilir. Oynama linki `{site_url}/play.php?t={token}` şeklindedir; `site_url` admin panelinden (`/admin/settings`) değiştirilebilir. QR kod görseli **istemci tarafında** QRCode.js ile admin panelde (lisans listesindeki "QR" butonu → modal) üretilir; PHP tarafında QR kütüphanesi kullanılmaz.
 
-`play.php` kök dizinde bağımsız bir giriş noktasıdır (MVC router'dan geçmez, `index.php` ile aynı şekilde bootstrap olur). Token'ı doğrular; lisans yoksa veya pasifse 403 ile geçersiz sayfası gösterir, aktifse oyun sayfasını render eder (oyun motoru Faz 6'da eklenecek). Lisanslar şu an için süresiz — yalnızca admin panelinden aktif/pasif yapılabilir; tüm aktif lisanslar tüm içeriğe erişebilir (kategori bazlı kısıtlama yok).
+`play.php` kök dizinde bağımsız bir giriş noktasıdır (MVC router'dan geçmez, `index.php` ile aynı şekilde bootstrap olur, parametre adı `t`). Token'ı doğrular; lisans yoksa, pasifse veya süresi dolmuşsa 403 ile nedeni açıklayan bir sayfa gösterir, geçerliyse oyun sayfasını render eder (oyun motoru Faz 6'da eklenecek) ve aktivasyon/son kullanım/son cihaz/son IP bilgilerini günceller. Lisans durumu (Aktif / Pasif / Süresi Doldu) admin panelde `is_active` ve opsiyonel `expires_at` alanlarından hesaplanarak gösterilir. Tüm aktif lisanslar tüm içeriğe erişebilir (kategori bazlı kısıtlama yok).
 
 ## Sağlık Kontrolü
 

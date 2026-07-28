@@ -12,4 +12,11 @@ class License extends BaseModel
 
         return $results[0] ?? null;
     }
+
+    public static function findByCode(string $code): ?array
+    {
+        $results = static::where('code', $code);
+
+        return $results[0] ?? null;
+    }
 }

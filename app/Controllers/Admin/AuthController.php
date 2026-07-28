@@ -6,10 +6,18 @@ use App\Controllers\BaseController;
 use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Session;
-use App\Models\Admin;
+use App\Repositories\AdminRepository;
+use App\Services\AuthService;
 
 class AuthController extends BaseController
 {
+    private AuthService $authService;
+
+    public function __construct()
+    {
+        $this->authService = new AuthService(new AdminRepository());
+    }
+
     public function showLoginForm(): void
     {
         if (Auth::check()) {
@@ -31,11 +39,12 @@ class AuthController extends BaseController
             $this->redirect(base_url('admin/login'));
         }
 
-        $username = trim((string) $request->input('username'));
-        $password = (string) $request->input('password');
-        $admin = Admin::findByUsername($username);
+        $admin = $this->authService->attempt(
+            trim((string) $request->input('username')),
+            (string) $request->input('password')
+        );
 
-        if (!$admin || !$admin['is_active'] || !password_verify($password, $admin['password'])) {
+        if (!$admin) {
             Session::flash('error', 'Kullanıcı adı veya şifre hatalı.');
             $this->redirect(base_url('admin/login'));
         }

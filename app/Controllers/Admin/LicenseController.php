@@ -4,16 +4,38 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
-use App\Helpers\Str;
-use App\Models\License;
+use App\Repositories\LicenseRepository;
+use App\Repositories\SettingRepository;
+use App\Services\Exceptions\ValidationException;
+use App\Services\LicenseService;
+use App\Services\SettingService;
 
 class LicenseController extends AdminBaseController
 {
+    private LicenseService $licenseService;
+    private SettingService $settingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->licenseService = new LicenseService(new LicenseRepository());
+        $this->settingService = new SettingService(new SettingRepository());
+    }
+
     public function index(): void
     {
+        $siteUrl = $this->settingService->getSiteUrl();
+
+        $licenses = array_map(function (array $license) use ($siteUrl) {
+            $license['status_label'] = $this->licenseService->statusLabel($license);
+            $license['play_url'] = $siteUrl . '/play.php?t=' . $license['token'];
+
+            return $license;
+        }, $this->licenseService->list());
+
         $this->view('admin.licenses.index', [
             'title' => 'Lisanslar',
-            'licenses' => License::all(),
+            'licenses' => $licenses,
             'success' => Session::getFlash('success'),
             'newLink' => Session::getFlash('license_link'),
         ], 'admin');
@@ -36,25 +58,21 @@ class LicenseController extends AdminBaseController
             $this->redirect(base_url('admin/licenses/create'));
         }
 
-        $name = trim((string) $request->input('name'));
+        $expiresAtInput = trim((string) $request->input('expires_at'));
 
-        if ($name === '') {
-            Session::flash('error', 'Lisans adı gerekli.');
+        try {
+            $license = $this->licenseService->create(
+                (string) $request->input('name'),
+                $expiresAtInput !== '' ? $expiresAtInput . ' 23:59:59' : null
+            );
+        } catch (ValidationException $e) {
+            Session::flash('error', $e->getMessage());
             $this->redirect(base_url('admin/licenses/create'));
         }
 
-        do {
-            $token = Str::random(32);
-        } while (License::findByToken($token));
-
-        License::create([
-            'name' => $name,
-            'token' => $token,
-            'is_active' => 1,
-        ]);
-
+        $siteUrl = $this->settingService->getSiteUrl();
         Session::flash('success', 'Lisans oluşturuldu.');
-        Session::flash('license_link', base_url('play.php?token=' . $token));
+        Session::flash('license_link', $siteUrl . '/play.php?t=' . $license['token']);
         $this->redirect(base_url('admin/licenses'));
     }
 
@@ -62,14 +80,8 @@ class LicenseController extends AdminBaseController
     {
         $request = new Request();
 
-        if (!Session::verifyCsrf($request->input('_csrf'))) {
-            $this->redirect(base_url('admin/licenses'));
-        }
-
-        $license = License::find($id);
-
-        if ($license) {
-            License::update($id, ['is_active' => $license['is_active'] ? 0 : 1]);
+        if (Session::verifyCsrf($request->input('_csrf'))) {
+            $this->licenseService->toggleStatus($id);
         }
 
         $this->redirect(base_url('admin/licenses'));

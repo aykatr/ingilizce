@@ -29,4 +29,20 @@ class Str
 
         return mb_substr($value, 0, $limit) . $end;
     }
+
+    public static function code(int $groups = 3, int $groupLength = 4): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $parts = [];
+
+        for ($g = 0; $g < $groups; $g++) {
+            $part = '';
+            for ($i = 0; $i < $groupLength; $i++) {
+                $part .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+            $parts[] = $part;
+        }
+
+        return implode('-', $parts);
+    }
 }
