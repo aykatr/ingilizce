@@ -4,11 +4,16 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AchievementMessageRepository;
+use App\Repositories\BadgeRepository;
 use App\Repositories\QuestionOptionRepository;
 use App\Repositories\QuestionRepository;
 use App\Repositories\SettingRepository;
+use App\Services\AchievementMessageService;
+use App\Services\BadgeService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\GameSessionService;
+use App\Services\MediaUploadService;
 use App\Services\SettingService;
 
 class GameController extends BaseController
@@ -17,10 +22,14 @@ class GameController extends BaseController
 
     public function __construct()
     {
+        $media = new MediaUploadService(config('app.uploads_path'));
+
         $this->gameService = new GameSessionService(
             new QuestionRepository(),
             new QuestionOptionRepository(),
-            new SettingService(new SettingRepository())
+            new SettingService(new SettingRepository()),
+            new AchievementMessageService(new AchievementMessageRepository(), $media),
+            new BadgeService(new BadgeRepository(), $media)
         );
     }
 

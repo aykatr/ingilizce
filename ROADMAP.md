@@ -16,8 +16,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | 4 | Soru Modülü (Seçenek Sistemi dahil) | ✅ Tamamlandı |
 | 5 | Oyun Motoru | ✅ Tamamlandı |
 | 6 | Ses Sistemi | ✅ Tamamlandı |
-| 7 | Puan ve Rozet Sistemi | ⏳ Onay bekleniyor |
-| 8 | Medya ve Ayarlar | ⏳ Bekliyor |
+| 7 | Puan ve Rozet Sistemi | ✅ Tamamlandı |
+| 8 | Medya ve Ayarlar | ⏳ Onay bekleniyor |
 | 9 | Optimizasyon | ⏳ Bekliyor |
 | 10 | Çoklu Dil Altyapısı | ⏳ Bekliyor |
 | 11 | Kart Paketleri | ⏳ Bekliyor |
@@ -125,13 +125,22 @@ Kapsam kullanıcı tarafından net çizildi: **yalnızca profesyonel bir AudioMa
 
 **Teslim:** Playwright ile 26 otomatik kontrol (play/pause/resume/stop/replay, preload/cache, öncelik kesintisi, queue+otomatik sıradaki, UI kanalı bağımsızlığı, mute/volume, "doğrudan Howl yok" statik kontrolü, GameEngine buton entegrasyonu, otomatik preload, mute butonunun gerçekten Howler'ı susturması) — **26/26 geçti, 0 konsol hatası**. Faz 5 regresyon paketi (58 kontrol) da tekrar çalıştırıldı, hâlâ temiz. Test sırasında bulunan tek gerçek tasarım sorunu düzeltildi: eşit öncelikli farklı bir ses istendiğinde (ör. kullanıcı başka bir hoparlör butonuna tıklaması) artık sıraya alınmak yerine hemen çalıyor (`priority >= current` kesme kuralı) — sıraya alma yalnızca gerçekten düşük öncelikli istekler için geçerli.
 
-## Faz 7 — Puan ve Rozet Sistemi
+## Faz 7 — Puan ve Rozet Sistemi ✅
 
-- [ ] Puan (+10 doğru cevapta, admin değiştirebilir)
-- [ ] Rozet (başlık/açıklama/resim/ses/animasyon/puan/koşul, admin sınırsız oluşturabilir)
-- [ ] Doğru cevap mesajları (yazı+ses+animasyon, admin sınırsız oluşturabilir, rastgele gösterilir)
-- [ ] Yanlış cevap mesajları (yazı+ses+animasyon, admin sınırsız oluşturabilir, rastgele gösterilir)
-- [ ] Geçiş mesajları (soru arası, yazı+ses+animasyon, rastgele gösterilir)
+Puan, başarı mesajları ve rozetler birbirinden bağımsız sistemler olarak geliştirildi (ayrı Service'ler, ayrı tablolar, aralarında doğrudan bağımlılık yok — yalnızca `GameSessionService` her üçünü orkestre ediyor).
+
+- [x] Puan Sistemi — soru bazlı puan (Faz 4'ten beri mevcut), doğru cevapta eklenir, yanlışta kazandırmaz, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir. Bu fazda yeni kod gerekmedi, davranış doğrulandı.
+- [x] Başarı Mesajları — `App\Services\AchievementMessageService`, `/admin/messages`, iki grup (Doğru/Yanlış), her mesaj Başlık+Ses+Animasyon Tipi+Aktif/Pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir (`pickRandom()`)
+- [x] Rozet Sistemi — `App\Services\BadgeService`, `/admin/badges`, Başlık+Açıklama+Görsel+Ses+Animasyon+Koşul(+Değer)+Aktif/Pasif
+- [x] Genişletilebilir koşul motoru — rozet kuralları kod içine sabit yazılmadı: her rozet DB'de bir `condition_type` (+ opsiyonel `condition_value`) taşır, `BadgeService` içindeki bir closure haritası bu tipi değerlendirir. Yeni koşul türü eklemek tek satır (harita + varsa admin select seçeneği); mevcut rozetler/entegrasyon değişmez.
+- [x] Örnek koşullar uygulandı: İlk doğru cevap, belirli sayıda doğru cevap, hatasız tamamlama, süre dolmadan tamamlama, belirli puana ulaşma
+- [x] Değerlendirme servis katmanında — `GameSessionService` her cevaptan sonra (ve oyun bitişinde) `BadgeService::evaluateNewlyEarned()` çağırır; **GameEngine yalnızca "rozet kazanıldı" bilgisini** (`earnedBadges` JSON alanı) alır, hiçbir koşul mantığı istemcide yok
+- [x] Aynı oyun oturumunda tekrar verilmeme — session state'te `awarded_badge_ids`, her değerlendirmede zaten verilmiş rozetler atlanır
+- [x] Frontend entegrasyonu — dinamik başarı mesajı metni+sesi (AudioManager `correct`/`wrong` kategorisi) + animasyon; rozet kazanıldığında altın renkli toast bildirimi (görsel+ses `badge` kategorisiyle, sıralı gösterim); sonuç ekranında oturum boyunca kazanılan tüm rozetlerin özeti
+
+**Teslim:** Admin CRUD (mesaj+rozet, doğrulama dahil) curl ile, oyun akışı içinde mesaj seçimi + rozet kazanımı (tekli/çoklu, aynı anda birden fazla rozet) + tekrar-vermeme + hatasız/hatalı senaryo ayrımı curl ile uçtan uca doğrulandı. Playwright ile 8 ek kontrol (dinamik mesaj, rozet toast bildirimi, sonuç ekranı özet, restart temizliği, rozetsiz oyun sonu) — **8/8 geçti**. Faz 5 (58 kontrol) ve Faz 6 (26 kontrol) regresyon paketleri tekrar çalıştırıldı, hâlâ temiz. Test sırasında `routes/web.php`'de daha önceden var olan iki ölü route (`GameController::state()/question()` — Faz 5 tasarım revizyonunda silinen metotlara işaret ediyorlardı) fark edildi ve temizlendi.
+
+**Not — kapsam dışı kalan bir önceki roadmap maddesi:** Bu fazın orijinal taslağında "Geçiş mesajları" (soru arası, yazı+ses+animasyon) da vardı, ancak bu faz için verilen açık talimat yalnızca Puan/Başarı Mesajları (Doğru+Yanlış)/Rozet'i kapsıyordu — geçiş mesajları bilinçli olarak bu fazın dışında bırakıldı. `AudioManager`'daki `transition` kategorisi buna hazır (öncelik=6), ileride bir fazda `achievement_messages` benzeri bir `transition_messages` tablosu + aynı `pickRandom()` deseniyle kolayca eklenebilir.
 
 ## Faz 8 — Medya ve Ayarlar
 

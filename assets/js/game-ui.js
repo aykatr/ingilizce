@@ -12,6 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerInterval = null;
     let timeLeft = 0;
 
+    const ANIMATIONS = {
+        bounce: (el) => gsap.fromTo(el, { y: 0 }, { y: -14, duration: 0.22, yoyo: true, repeat: 3, ease: 'power1.inOut' }),
+        pulse: (el) => gsap.fromTo(el, { scale: 1 }, { scale: 1.15, duration: 0.25, yoyo: true, repeat: 3, ease: 'power1.inOut' }),
+        shake: (el) => gsap.fromTo(el, { x: -8 }, { x: 8, duration: 0.08, yoyo: true, repeat: 5, ease: 'power1.inOut', onComplete: () => gsap.set(el, { x: 0 }) }),
+        pop: (el) => gsap.fromTo(el, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' }),
+        fade: (el) => gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5 }),
+    };
+
+    function playAnimation(el, type) {
+        if (!window.gsap) {
+            return;
+        }
+
+        (ANIMATIONS[type] || ANIMATIONS.pop)(el);
+    }
+
     if (localStorage.getItem('yippee_muted') === '1') {
         audio.mute();
     }
@@ -135,12 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function reactToAnswer(result, position) {
+        const message = result.message;
+
         if (result.correct) {
             const card = document.getElementById('option-' + position);
             card.classList.add('is-correct');
             disableOtherOptions(position);
-            showToast('Harika!', true);
+            showToast(message?.title || 'Harika!', true, message?.animationType);
             floatScore(result.scoreDelta);
+
+            if (message?.audio) {
+                audio.play(message.audio, { category: 'correct' });
+            }
 
             if (window.gsap) {
                 gsap.fromTo(card, { scale: 1 }, { scale: 1.06, duration: 0.18, yoyo: true, repeat: 1, ease: 'power1.inOut' });
@@ -155,11 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            showToast(result.gameOver ? 'Oyun Bitti' : 'Tekrar Dene', false);
+            showToast(message?.title || (result.gameOver ? 'Oyun Bitti' : 'Tekrar Dene'), false, message?.animationType);
+
+            if (message?.audio) {
+                audio.play(message.audio, { category: 'wrong' });
+            }
         }
 
         renderHearts(result.lives, result.maxLives);
         document.getElementById('score-label').textContent = result.score;
+        showEarnedBadges(result.earnedBadges);
 
         if (result.correct) {
             setTimeout(() => {
@@ -186,24 +213,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function showToast(text, correct) {
+    function showToast(text, correct, animationType) {
         const toast = document.getElementById('feedback-toast');
         toast.textContent = text;
         toast.classList.remove('is-correct', 'is-wrong');
         toast.classList.add(correct ? 'is-correct' : 'is-wrong');
 
         if (window.gsap) {
-            gsap.fromTo(
-                toast,
-                { opacity: 0, y: 10, scale: 0.85 },
-                { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: 'back.out(2)' }
-            );
-            gsap.to(toast, { opacity: 0, y: -10, duration: 0.3, delay: 1.0 });
+            gsap.killTweensOf(toast);
+            gsap.set(toast, { opacity: 1, scale: 1, x: 0, y: 0 });
+            playAnimation(toast, animationType || (correct ? 'pop' : 'shake'));
+            gsap.to(toast, { opacity: 0, duration: 0.3, delay: 1.1 });
         } else {
             toast.style.opacity = 1;
             setTimeout(() => {
                 toast.style.opacity = 0;
             }, 1200);
+        }
+    }
+
+    function showEarnedBadges(badges) {
+        if (!Array.isArray(badges) || badges.length === 0) {
+            return;
+        }
+
+        badges.forEach((badge, i) => {
+            setTimeout(() => showBadgeToast(badge), i * 1600);
+        });
+    }
+
+    function showBadgeToast(badge) {
+        const el = document.createElement('div');
+        el.className = 'badge-toast';
+
+        const media = document.createElement(badge.image ? 'img' : 'div');
+        if (badge.image) {
+            media.src = badge.image;
+            media.alt = '';
+        } else {
+            media.className = 'badge-toast-icon';
+            media.textContent = '🏅';
+        }
+
+        const text = document.createElement('div');
+        const label = document.createElement('div');
+        label.className = 'badge-toast-label';
+        label.textContent = 'Rozet Kazandın!';
+        const title = document.createElement('div');
+        title.className = 'badge-toast-title';
+        title.textContent = badge.title;
+        text.appendChild(label);
+        text.appendChild(title);
+
+        el.appendChild(media);
+        el.appendChild(text);
+        document.body.appendChild(el);
+
+        if (badge.audio) {
+            audio.play(badge.audio, { category: 'badge' });
+        }
+
+        if (window.gsap) {
+            gsap.set(el, { opacity: 0, y: -20 });
+            gsap.to(el, { opacity: 1, y: 0, duration: 0.35, ease: 'back.out(2)' });
+            playAnimation(media, badge.animationType || 'pop');
+            gsap.to(el, { opacity: 0, y: -20, duration: 0.35, delay: 1.6, onComplete: () => el.remove() });
+        } else {
+            setTimeout(() => el.remove(), 2000);
         }
     }
 
@@ -364,6 +440,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('result-score').textContent = engine.score;
+        renderResultBadges();
+    }
+
+    function renderResultBadges() {
+        const container = document.getElementById('result-badges');
+        container.innerHTML = '';
+
+        if (engine.badges.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+
+        engine.badges.forEach((badge) => {
+            const item = document.createElement('div');
+            item.className = 'result-badge-item';
+
+            const media = document.createElement(badge.image ? 'img' : 'div');
+            if (badge.image) {
+                media.src = badge.image;
+                media.alt = '';
+            } else {
+                media.className = 'result-badge-icon';
+                media.textContent = '🏅';
+            }
+
+            const title = document.createElement('div');
+            title.className = 'result-badge-title';
+            title.textContent = badge.title;
+
+            item.appendChild(media);
+            item.appendChild(title);
+            container.appendChild(item);
+        });
     }
 
     engine.addEventListener('question', renderQuestion);

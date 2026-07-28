@@ -134,6 +134,7 @@
                     <h1 id="result-heading">Tebrikler!</h1>
                     <div class="result-score" id="result-score">0</div>
                     <div class="result-sub" id="result-sub">Puan Kazandın</div>
+                    <div class="result-badges" id="result-badges"></div>
                     <button type="button" id="btn-restart" class="btn-pill-primary">🔄 TEKRAR OYNA</button>
                 </div>
             </section>

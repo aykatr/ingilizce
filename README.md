@@ -50,7 +50,7 @@ Detaylar için [CLAUDE.md](CLAUDE.md).
 ```
 app/
   Controllers/    Controller sınıfları (BaseController üzerinden türetilir) — yalnızca HTTP orkestrasyonu
-  Services/       İş kuralları (AuthService, LicenseService, SettingService, CategoryService, QuestionService, MediaUploadService, StartScreenService, GameSessionService)
+  Services/       İş kuralları (AuthService, LicenseService, SettingService, CategoryService, QuestionService, MediaUploadService, StartScreenService, GameSessionService, AchievementMessageService, BadgeService)
   Repositories/   Domain'e özel veri erişimi; arayüzler Repositories/Contracts altında
   Models/         Tablo gateway'leri (BaseModel üzerinden türetilir)
   Core/           Framework çekirdeği: Router, Request, View, Config, Env, Database, Session, Auth, Migration
@@ -94,6 +94,18 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/questions/{id}/edit` | Soru düzenleme formu — sekmeli, önizleme dahil (giriş gerektirir) |
 | `POST /admin/questions/{id}` | Soru güncelle (giriş gerektirir) |
 | `POST /admin/questions/{id}/delete` | Soru sil — medya dosyaları dahil temizlenir (giriş gerektirir) |
+| `GET /admin/messages` | Başarı mesajları listesi — Doğru/Yanlış grupları (giriş gerektirir) |
+| `GET /admin/messages/create` | Yeni mesaj formu (giriş gerektirir) |
+| `POST /admin/messages` | Mesaj oluştur (giriş gerektirir) |
+| `GET /admin/messages/{id}/edit` | Mesaj düzenleme formu (giriş gerektirir) |
+| `POST /admin/messages/{id}` | Mesaj güncelle (giriş gerektirir) |
+| `POST /admin/messages/{id}/delete` | Mesaj sil (giriş gerektirir) |
+| `GET /admin/badges` | Rozet listesi (giriş gerektirir) |
+| `GET /admin/badges/create` | Yeni rozet formu (giriş gerektirir) |
+| `POST /admin/badges` | Rozet oluştur (giriş gerektirir) |
+| `GET /admin/badges/{id}/edit` | Rozet düzenleme formu (giriş gerektirir) |
+| `POST /admin/badges/{id}` | Rozet güncelle (giriş gerektirir) |
+| `POST /admin/badges/{id}/delete` | Rozet sil (giriş gerektirir) |
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
@@ -134,7 +146,15 @@ Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif 
 - **Önceki/Sonraki**: Önceki yalnızca tamamlanmış sorularda çalışır (istemci tarafında önbelleklenmiş, salt-okunur inceleme); Sonraki yalnızca inceleme modundayken aktiftir.
 - **Başlangıç ekranı içeriği** (arka plan, logo, maskot görselleri, başlık/açıklama/buton metni) tamamen admin panelden yönetilir (`/admin/settings/start-screen`); kod içinde sabit görsel/metin yoktur. Yüklenmemiş görseller sayfa bozulmadan gizlenir.
 
-**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** rozet sistemi, rastgele doğru/yanlış/geçiş mesajları ve bunların sesleri (Faz 7).
+**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** geçiş mesajları (soru arası).
+
+## Puan, Başarı Mesajları ve Rozetler
+
+Üç bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif).
+
+Rozet koşulları kod içine sabit yazılmaz: her rozet bir `condition_type` (+ opsiyonel `condition_value`) taşır, `App\Services\BadgeService` bunu genişletilebilir bir closure haritasıyla değerlendirir. Hazır koşullar: ilk doğru cevap, belirli sayıda doğru cevap, hatasız tamamlama, süre dolmadan tamamlama, belirli puana ulaşma — yenileri kolayca eklenebilir. Değerlendirme tamamen sunucu tarafında (`GameSessionService`); istemci yalnızca hangi rozetlerin kazanıldığı bilgisini alır ve gösterir. Aynı rozet aynı oyun oturumunda ikinci kez verilmez.
+
+Kazanılan rozetler oyun sırasında altın renkli bir bildirimle (görsel+ses+animasyon) gösterilir, oturum sonunda sonuç ekranında özetlenir.
 
 ## AudioManager
 
@@ -143,7 +163,7 @@ Tüm ses oynatma `assets/js/audio-manager.js` üzerinden geçer (`window.AudioMa
 - **Play / Stop / Pause / Resume / Replay**, **Queue** (düşük öncelikli istekler mevcut ses bitene kadar bekler, otomatik sıradaki çalar), **Preload/Cache** (aynı ses tekrar istenirse yeniden indirilmez), **Fade In/Out**, **Volume**, **Mute/Unmute**, **Öncelik (priority)** — kategoriye göre varsayılan, istek bazında override edilebilir.
 - Aynı anda yalnızca bir "ana" ses çalar (kart/soru/seçenek/doğru/yanlış/geçiş/rozet kategorileri bu kanalı paylaşır); arayüz sesleri (`ui` kategorisi) ayrı kanalda, ana sesi etkilemez.
 - Aynı sesin üst üste binmesi engellenir; eşit veya yüksek öncelikli yeni istek mevcut sesi 180ms fade-out ile keser, düşük öncelikli istek sıraya alınır.
-- `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/transition/badge kategorileri AudioManager'da hazır ama henüz gerçek ses dosyası yok (Faz 7/8'de admin panelden yüklenecek).
+- `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/badge kategorileri Faz 7'de bağlandı (başarı mesajları ve rozetlerin sesleri); `transition` kategorisi AudioManager'da hazır ama henüz gerçek ses dosyası yok (geçiş mesajları bu fazın kapsamında değildi).
 
 ## Sağlık Kontrolü
 

@@ -15,6 +15,8 @@ class GameSessionService
         private QuestionRepositoryInterface $questions,
         private QuestionOptionRepositoryInterface $options,
         private SettingService $settings,
+        private AchievementMessageService $messages,
+        private BadgeService $badges,
     ) {
     }
 
@@ -40,6 +42,8 @@ class GameSessionService
             'max_lives' => $lives,
             'attempted' => [],
             'game_over' => false,
+            'timeout_occurred' => false,
+            'awarded_badge_ids' => [],
         ]);
 
         return $this->currentPayload();
@@ -58,6 +62,10 @@ class GameSessionService
 
         if ($index >= $total) {
             throw new ValidationException('Oynanacak soru kalmadı.');
+        }
+
+        if ($isTimeout) {
+            $state['timeout_occurred'] = true;
         }
 
         $questionId = $state['question_ids'][$index];
@@ -81,6 +89,9 @@ class GameSessionService
             $state['index']++;
             $state['attempted'] = [];
 
+            $isFinished = $state['index'] >= $total;
+            $earnedBadges = $this->evaluateBadges($state, $isFinished);
+
             Session::put(self::SESSION_KEY, $state);
 
             return [
@@ -91,6 +102,8 @@ class GameSessionService
                 'maxLives' => $state['max_lives'],
                 'correctPosition' => $correctOption['position'],
                 'gameOver' => false,
+                'message' => $this->formatMessage($this->messages->pickRandom(AchievementMessageService::TYPE_CORRECT)),
+                'earnedBadges' => array_map($this->formatBadge(...), $earnedBadges),
                 'next' => $this->currentPayload(),
             ];
         }
@@ -105,6 +118,8 @@ class GameSessionService
             $state['game_over'] = true;
         }
 
+        $earnedBadges = $this->evaluateBadges($state, $state['game_over']);
+
         Session::put(self::SESSION_KEY, $state);
 
         return [
@@ -115,7 +130,56 @@ class GameSessionService
             'maxLives' => $state['max_lives'],
             'attempted' => $state['attempted'],
             'gameOver' => $state['game_over'],
+            'message' => $this->formatMessage($this->messages->pickRandom(AchievementMessageService::TYPE_WRONG)),
+            'earnedBadges' => array_map($this->formatBadge(...), $earnedBadges),
             'next' => null,
+        ];
+    }
+
+    /** @return array newly earned badge rows (raw, unformatted) */
+    private function evaluateBadges(array &$state, bool $isFinished): array
+    {
+        $context = [
+            'correctCount' => $state['index'],
+            'score' => $state['score'],
+            'lives' => max(0, $state['lives']),
+            'maxLives' => $state['max_lives'],
+            'timeoutOccurred' => $state['timeout_occurred'],
+            'isFinished' => $isFinished,
+            'gameOver' => $state['game_over'],
+        ];
+
+        $earned = $this->badges->evaluateNewlyEarned($context, $state['awarded_badge_ids']);
+
+        foreach ($earned as $badge) {
+            $state['awarded_badge_ids'][] = (int) $badge['id'];
+        }
+
+        return $earned;
+    }
+
+    private function formatMessage(?array $message): ?array
+    {
+        if (!$message) {
+            return null;
+        }
+
+        return [
+            'title' => $message['title'],
+            'audio' => $this->mediaUrl($message['audio']),
+            'animationType' => $message['animation_type'],
+        ];
+    }
+
+    private function formatBadge(array $badge): array
+    {
+        return [
+            'id' => (int) $badge['id'],
+            'title' => $badge['title'],
+            'description' => $badge['description'],
+            'image' => $this->mediaUrl($badge['image']),
+            'audio' => $this->mediaUrl($badge['audio']),
+            'animationType' => $badge['animation_type'],
         ];
     }
 

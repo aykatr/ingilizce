@@ -17,6 +17,7 @@ class GameEngine extends EventTarget {
         this.viewIndex = null;
         this.finished = false;
         this.gameOver = false;
+        this.badges = [];
     }
 
     async #post(url, body = {}) {
@@ -41,6 +42,7 @@ class GameEngine extends EventTarget {
         this.viewIndex = null;
         this.finished = false;
         this.gameOver = false;
+        this.badges = [];
 
         const data = await this.#post('/play/api/start');
         this.#applyPayload(data);
@@ -181,6 +183,10 @@ class GameEngine extends EventTarget {
     }
 
     #handleAnswerResult(data, position) {
+        if (Array.isArray(data.earnedBadges) && data.earnedBadges.length > 0) {
+            this.badges.push(...data.earnedBadges);
+        }
+
         if (data.correct) {
             this.history.push({
                 index: this.index,

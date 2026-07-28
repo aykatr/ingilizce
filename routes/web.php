@@ -1,6 +1,8 @@
 <?php
 
+use App\Controllers\Admin\AchievementMessageController;
 use App\Controllers\Admin\AuthController;
+use App\Controllers\Admin\BadgeController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\LicenseController;
@@ -50,9 +52,21 @@ $router->get('/admin/questions/{id}/edit', [QuestionController::class, 'edit']);
 $router->post('/admin/questions/{id}', [QuestionController::class, 'update']);
 $router->post('/admin/questions/{id}/delete', [QuestionController::class, 'destroy']);
 
+$router->get('/admin/messages', [AchievementMessageController::class, 'index']);
+$router->get('/admin/messages/create', [AchievementMessageController::class, 'create']);
+$router->post('/admin/messages', [AchievementMessageController::class, 'store']);
+$router->get('/admin/messages/{id}/edit', [AchievementMessageController::class, 'edit']);
+$router->post('/admin/messages/{id}', [AchievementMessageController::class, 'update']);
+$router->post('/admin/messages/{id}/delete', [AchievementMessageController::class, 'destroy']);
+
+$router->get('/admin/badges', [BadgeController::class, 'index']);
+$router->get('/admin/badges/create', [BadgeController::class, 'create']);
+$router->post('/admin/badges', [BadgeController::class, 'store']);
+$router->get('/admin/badges/{id}/edit', [BadgeController::class, 'edit']);
+$router->post('/admin/badges/{id}', [BadgeController::class, 'update']);
+$router->post('/admin/badges/{id}/delete', [BadgeController::class, 'destroy']);
+
 $router->post('/play/api/start', [GameController::class, 'start']);
-$router->get('/play/api/state', [GameController::class, 'state']);
-$router->get('/play/api/question', [GameController::class, 'question']);
 $router->post('/play/api/answer', [GameController::class, 'answer']);
 $router->post('/play/api/timeout', [GameController::class, 'timeout']);
 

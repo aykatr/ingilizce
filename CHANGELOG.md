@@ -2,6 +2,31 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.8.0] - 2026-07-28
+
+Faz 7 — Puan ve Rozet Sistemi. Puan, başarı mesajları ve rozetler bağımsız sistemler olarak geliştirildi.
+
+### Eklendi
+
+- `achievement_messages` tablosu + `App\Services\AchievementMessageService` — Doğru/Yanlış grupları, `/admin/messages` CRUD, oyun sırasında aktif bir mesaj rastgele seçilir (`pickRandom()`)
+- `badges` tablosu + `App\Services\BadgeService` — `/admin/badges` CRUD, genişletilebilir koşul değerlendirme motoru (`condition_type` + closure haritası — kod içine sabit rozet kuralı yazılmadı)
+- Hazır rozet koşulları: ilk doğru cevap, belirli sayıda doğru cevap, belirli puana ulaşma, hatasız tamamlama, süre dolmadan tamamlama
+- `GameSessionService` entegrasyonu — her cevaptan sonra mesaj seçimi + rozet değerlendirmesi, `earnedBadges`/`message` JSON alanları; oturum içinde `awarded_badge_ids` ile aynı rozetin ikinci kez verilmesi engellendi
+- `App\Services\AnimationTypes` — mesaj/rozet ortak animasyon kataloğu (bounce/pulse/shake/pop/fade)
+- Frontend: dinamik başarı mesajı (metin+ses+animasyon, `AudioManager` correct/wrong kategorisi), rozet kazanımında altın renkli toast bildirimi (`badge` kategorisi, birden fazla rozet sırayla gösterilir), sonuç ekranında oturum boyunca kazanılan rozetlerin özeti
+
+### Düzeltildi
+
+- `routes/web.php`'de Faz 5 revizyonundan kalma iki ölü route (`GameController::state()/question()` — artık var olmayan metotlara işaret ediyorlardı) temizlendi
+
+### Test
+
+Admin CRUD (mesaj+rozet, validasyon dahil) ve oyun akışındaki mesaj/rozet entegrasyonu (tekli/çoklu rozet kazanımı, tekrar-vermeme, hatasız/hatalı senaryo ayrımı) curl ile uçtan uca doğrulandı. Playwright ile 8 ek kontrol — 8/8 geçti. Faz 5 (58 kontrol) ve Faz 6 (26 kontrol) regresyon paketleri tekrar çalıştırıldı, hâlâ temiz.
+
+### Kapsam dışı
+
+Geçiş mesajları (soru arası) bu fazda yer almadı — bu turun açık talimatı yalnızca Puan/Başarı Mesajları(Doğru+Yanlış)/Rozet'i kapsıyordu. `AudioManager`'ın `transition` kategorisi buna hazır.
+
 ## [0.7.0] - 2026-07-28
 
 Faz 6 — Ses Sistemi. Kapsam kullanıcı tarafından net çizildi: yalnızca profesyonel bir `AudioManager` geliştirildi, oyun ekranı/UI değişmedi.
