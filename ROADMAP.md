@@ -5,6 +5,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 > Faz 3 sonunda proje kapsamı "YIPPEE LEARNING PLATFORM" tam spesifikasyonuyla netleştirildi (Repository+Service mimarisi, Bootstrap 5/QRCode.js frontend, zenginleştirilmiş lisans şeması). Faz 1-3'ün kodu bu mimariye göre revize edildi.
 >
 > Faz 4 tasarım kararlarıyla birlikte eski "Faz 5 — Seçenek Sistemi" içeriği (4 seçenek yönetimi, seçenek medya yükleme) Faz 4'ün kapsamına dahil edildi ve fazlar buna göre yeniden numaralandırıldı: eski Faz 6 → yeni Faz 5, eski Faz 7 → yeni Faz 6, ... eski Faz 16 → yeni Faz 15.
+>
+> Faz 8 kapsamı netleştirilirken bu projede çoklu dil desteği olmayacağına karar verildi (oyun içeriği zaten admin panelinden İngilizce girildiği için ayrı bir i18n/çeviri altyapısına ihtiyaç yok, yönetim paneli sadece Türkçe kalacak) — eski "Faz 10 — Çoklu Dil Altyapısı" kaldırıldı ve sonraki fazlar buna göre yeniden numaralandırıldı: eski Faz 11 → yeni Faz 10, eski Faz 12 → yeni Faz 11, eski Faz 13 → yeni Faz 12, eski Faz 14 → yeni Faz 13, eski Faz 15 → yeni Faz 14.
 
 ## Durum
 
@@ -17,14 +19,13 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | 5 | Oyun Motoru | ✅ Tamamlandı |
 | 6 | Ses Sistemi | ✅ Tamamlandı |
 | 7 | Puan ve Rozet Sistemi | ✅ Tamamlandı |
-| 8 | Medya ve Ayarlar | ⏳ Onay bekleniyor |
+| 8 | Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme | ⏳ Onay bekleniyor |
 | 9 | Optimizasyon | ⏳ Bekliyor |
-| 10 | Çoklu Dil Altyapısı | ⏳ Bekliyor |
-| 11 | Kart Paketleri | ⏳ Bekliyor |
-| 12 | İlerleme ve Kaldığı Yerden Devam | ⏳ Bekliyor |
-| 13 | PWA / Offline Altyapı | ⏳ Bekliyor |
-| 14 | Analytics Altyapısı | ⏳ Bekliyor |
-| 15 | Medya Optimizasyonu (toplu yükleme, önizleme, WebP, MP3/OGG) | ⏳ Bekliyor |
+| 10 | Kart Paketleri | ⏳ Bekliyor |
+| 11 | İlerleme ve Kaldığı Yerden Devam | ⏳ Bekliyor |
+| 12 | PWA / Offline Altyapı | ⏳ Bekliyor |
+| 13 | Analytics Altyapısı | ⏳ Bekliyor |
+| 14 | Medya Optimizasyonu (toplu yükleme, önizleme, WebP, MP3/OGG) | ⏳ Bekliyor |
 
 ## Faz 1 — Proje Altyapısı ✅
 
@@ -141,12 +142,14 @@ Puan, başarı mesajları ve rozetler birbirinden bağımsız sistemler olarak g
 
 **Teslim:** Admin CRUD (mesaj+rozet+geçiş mesajı, doğrulama dahil) curl ile, oyun akışı içinde mesaj seçimi + rozet kazanımı (tekli/çoklu, aynı anda birden fazla rozet) + geçiş mesajı (sonraki soru varken/yokken) + tekrar-vermeme + hatasız/hatalı senaryo ayrımı curl ile uçtan uca doğrulandı. Playwright ile 10 ek kontrol (dinamik mesaj, rozet toast bildirimi, geçiş mesajı toast'ı, sonuç ekranı özet, restart temizliği, rozetsiz oyun sonu) — **10/10 geçti**. Faz 5 (58 kontrol) ve Faz 6 (26 kontrol) regresyon paketleri tekrar çalıştırıldı, hâlâ temiz. Test sırasında `routes/web.php`'de daha önceden var olan iki ölü route (`GameController::state()/question()` — Faz 5 tasarım revizyonunda silinen metotlara işaret ediyorlardı) fark edildi ve temizlendi.
 
-## Faz 8 — Medya ve Ayarlar
+## Faz 8 — Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme
 
-- [ ] Ses yönetimi (admin panel modülü)
-- [ ] Görsel yönetimi (admin panel modülü)
-- [ ] Site ayarları — Faz 3'te site URL, Faz 4'te varsayılan süre/puan için minimal başlatıldı; burada tam modül (genel ayarlar, yedekleme, loglar dahil admin menüsü) tamamlanacak
-- [ ] Dil altyapısı (bkz. Faz 10 — çoklu dil burada temel altyapı, Faz 10'da genişletilecek)
+- [ ] Merkezi Medya Kütüphanesi — tüm görsel (WebP/PNG/JPG) ve ses (MP3/OGG) dosyalarını tek ekrandan yöneten yeni admin modülü: listele (görsel/ses ayrı), arama, filtreleme, önizleme/ses oynatma, dosya boyutu+türü, "kullanıldığı yerler" gösterimi, kullanılmayan dosyaları işaretleme, dosya değiştirme, dosya silme (kullanımdaysa engelle/uyar), toplu yükleme. Mevcut soru/mesaj/rozet/başlangıç-ekranı yükleme akışları bozulmaz — "Görsel/Ses Yükle" ile doğrudan yükleme hâlâ çalışır, buna ek olarak kütüphaneden mevcut bir dosya seçme seçeneği eklenir.
+- [ ] Site ayarları — Faz 3'te site URL, Faz 4'te varsayılan süre/puan için minimal başlatıldı; burada genel ayarlar admin menüsü tamamlanacak
+- [ ] Admin İşlem Logu (Audit Log) — giriş/çıkış, CRUD işlemleri, ayar değişiklikleri, lisans işlemleri, medya işlemleri kayıt altına alınır
+- [ ] Veritabanı Yedeği Alma — admin panelden tek tıkla SQL export indirme (geri yükleme bu fazın kapsamında değil)
+
+**Kapsam dışı (bilinçli):** PHP/sistem hata logu görüntüleme (sonraki bir sürüme bırakıldı), yedekten geri yükleme (restore).
 
 ## Faz 9 — Optimizasyon
 
@@ -156,29 +159,25 @@ Puan, başarı mesajları ve rozetler birbirinden bağımsız sistemler olarak g
 - [ ] Son testler
 - [ ] Production hazırlığı
 
-## Faz 10 — Çoklu Dil Altyapısı
-
-- [ ] Çeviri/i18n altyapısı (admin panel + oyun arayüzü)
-
-## Faz 11 — Kart Paketleri
+## Faz 10 — Kart Paketleri
 
 - [ ] Lisansları/soru modüllerini paketler halinde gruplama
 
-## Faz 12 — İlerleme ve Kaldığı Yerden Devam
+## Faz 11 — İlerleme ve Kaldığı Yerden Devam
 
 - [ ] Oyuncu ilerleme kaydı
 - [ ] Kaldığı yerden devam etme
 
-## Faz 13 — PWA / Offline Altyapı
+## Faz 12 — PWA / Offline Altyapı
 
 - [ ] Service worker, manifest, offline oynama desteği
 
-## Faz 14 — Analytics Altyapısı
+## Faz 13 — Analytics Altyapısı
 
 - [ ] Chart.js ile admin dashboard istatistikleri
 - [ ] Kullanım/etkileşim analitiği
 
-## Faz 15 — Medya Optimizasyonu
+## Faz 14 — Medya Optimizasyonu
 
 - [ ] Toplu medya yükleme
 - [ ] Ses önizleme

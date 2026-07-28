@@ -14,7 +14,7 @@ Bu proje `ROADMAP.md` içinde tanımlı fazlar halinde geliştirilir. **Bir faz 
 
 - Backend: PHP 8.3, MySQL 8, custom MVC (framework yok, Composer sadece PSR-4 autoload için)
 - Frontend: Bootstrap 5 (CDN), HTML5, CSS3, Vanilla JavaScript (ES2023) — **jQuery kullanılmaz**
-- Kütüphaneler (CDN üzerinden, build adımı yok): QRCode.js (admin panelde QR görüntüleme), GSAP (oyun ekranı animasyonları), Howler.js (`AudioManager`, bkz. aşağıda). Chart.js henüz entegre edilmedi — dashboard istatistikleri (Faz 14) gerçek ihtiyaç doğduğunda eklenecek (YAGNI).
+- Kütüphaneler (CDN üzerinden, build adımı yok): QRCode.js (admin panelde QR görüntüleme), GSAP (oyun ekranı animasyonları), Howler.js (`AudioManager`, bkz. aşağıda). Chart.js henüz entegre edilmedi — dashboard istatistikleri (Faz 13) gerçek ihtiyaç doğduğunda eklenecek (YAGNI).
 - Oyun ekranı fontu Google Fonts "Baloo 2" (CDN) — sadece `play.php` sayfalarında, admin panel Bootstrap'in sistem fontunu kullanmaya devam ediyor.
 
 ## Mimari — Katmanlar
