@@ -8,8 +8,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 |---|---|---|
 | 1 | Proje Altyapısı | ✅ Tamamlandı |
 | 2 | Admin Paneli | ✅ Tamamlandı |
-| 3 | Lisans Sistemi | ⏳ Onay bekleniyor |
-| 4 | Soru Modülü | ⏳ Bekliyor |
+| 3 | Lisans Sistemi | ✅ Tamamlandı |
+| 4 | Soru Modülü | ⏳ Onay bekleniyor |
 | 5 | Seçenek Sistemi | ⏳ Bekliyor |
 | 6 | Oyun Motoru | ⏳ Bekliyor |
 | 7 | Ses Sistemi | ⏳ Bekliyor |
@@ -44,13 +44,15 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 
 **Teslim:** Migration (`admins` tablosu) ve seed script ile çalışan admin paneli. Giriş/çıkış, şifre değiştirme ve route koruması `ingilizce.test` üzerinde uçtan uca test edildi.
 
-## Faz 3 — Lisans Sistemi
+## Faz 3 — Lisans Sistemi ✅
 
-- [ ] Lisans oluşturma
-- [ ] QR üretme
-- [ ] Token doğrulama
-- [ ] play.php
-- [ ] Aktif / Pasif yönetimi
+- [x] Lisans oluşturma — admin panelinden ad girilerek oluşturulur, 32 karakterlik benzersiz token üretilir
+- [x] QR üretme — kapsam kullanıcı kararıyla değiştirildi: sistem yalnızca token + oynama linki üretir, QR görseli harici araçla kullanıcı tarafından üretiliyor
+- [x] Token doğrulama — `License::findByToken()` + `is_active` kontrolü
+- [x] play.php — kök dizinde bağımsız giriş noktası, token doğrular, geçersiz/pasifse 403
+- [x] Aktif / Pasif yönetimi — `POST /admin/licenses/{id}/toggle`
+
+**Teslim:** Lisans oluşturma, listeleme, aktif/pasif toggle ve `play.php` token doğrulaması `ingilizce.test` üzerinde uçtan uca test edildi. Lisanslar süresiz (yalnızca aktif/pasif), tüm aktif lisanslar tüm içeriğe erişebiliyor (kategori bazlı kısıtlama yok).
 
 ## Faz 4 — Soru Modülü
 

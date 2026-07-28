@@ -21,6 +21,8 @@ Custom, hafif bir MVC iskeleti — Laravel/Symfony gibi bir framework kullanılm
 - **Admin route koruması**: Giriş gerektiren admin controller'ları `App\Controllers\Admin\AdminBaseController`'dan türetilir; constructor `Auth::check()` değilse `/admin/login`'e yönlendirir ve `$this->admin` dizisini doldurur. Herkese açık admin route'ları (login/logout) düz `BaseController`'dan türetilir.
 - **CSRF**: State değiştiren tüm POST formlarında `<?= csrf_field() ?>` kullanılmalı, controller tarafında `Session::verifyCsrf($request->input('_csrf'))` ile doğrulanmalı. Bir view'da birden fazla form varsa (ör. admin layout'taki çıkış formu + sayfa formu) her ikisi de aynı token'ı üretir — tek bir token yeterlidir.
 - **Migration**: `database/migrations/*.php` her biri `App\Core\Migration`'ı extend eden anonim bir sınıf döndürür (`up(PDO)/down(PDO)`). Dosya adı `YYYY_MM_DD_HHMMSS_aciklama.php` formatında olmalı (sıralama buna göre yapılır). Çalıştırmak için `php database/migrate.php migrate`, geri almak için `php database/migrate.php rollback` (son batch'i geri alır).
+- **play.php**: Roadmap'te ayrı bir dosya olarak belirtildiği için kök dizinde, router'dan bağımsız bir giriş noktası olarak tutuluyor (`index.php` ile aynı bootstrap deseni: autoload + `Env::load` + `Config::load`). Gelecekte oyun motoru mantığı büyürse bile bu dosyayı router'a taşımayın — kasıtlı bir mimari karar.
+- **Lisans/QR**: Sistem yalnızca token + oynama linki (`play.php?token=...`) üretir; QR görseli üretimi kapsam dışı bırakıldı (kullanıcı bunu harici bir araçla kendisi üretiyor). Lisanslar süresiz — yalnızca `is_active` ile aktif/pasif yapılır, kategoriye özel kısıtlama yok (tüm aktif lisanslar tüm içeriğe erişir).
 
 ## Güvenlik
 

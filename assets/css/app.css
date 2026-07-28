@@ -141,3 +141,50 @@ body.admin {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     max-width: 360px;
 }
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.btn-link {
+    color: #2f5df5;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-table th,
+.data-table td {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.data-table form {
+    margin: 0;
+}
+
+.data-table button {
+    width: auto;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+}
+
+code {
+    background: #f0f1f4;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}

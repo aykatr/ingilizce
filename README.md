@@ -61,8 +61,18 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `POST /admin/logout` | Çıkış işlemi |
 | `GET /admin/dashboard` | Panel (giriş gerektirir) |
 | `GET/POST /admin/password` | Şifre değiştirme (giriş gerektirir) |
+| `GET /admin/licenses` | Lisans listesi (giriş gerektirir) |
+| `GET /admin/licenses/create` | Yeni lisans formu (giriş gerektirir) |
+| `POST /admin/licenses` | Lisans oluştur (giriş gerektirir) |
+| `POST /admin/licenses/{id}/toggle` | Lisansı aktif/pasif yap (giriş gerektirir) |
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
+
+## Lisans Sistemi
+
+Bir lisans oluşturulduğunda rastgele 32 karakterlik bir `token` üretilir ve oynama linki gösterilir: `http://ingilizce.test/play.php?token=<token>`. QR kod görseli sisteme dahil değildir — bu link istenirse harici bir araçla QR koduna dönüştürülebilir.
+
+`play.php` kök dizinde bağımsız bir giriş noktasıdır (MVC router'dan geçmez, `index.php` ile aynı şekilde bootstrap olur). Token'ı doğrular; lisans yoksa veya pasifse 403 ile geçersiz sayfası gösterir, aktifse oyun sayfasını render eder (oyun motoru Faz 6'da eklenecek). Lisanslar şu an için süresiz — yalnızca admin panelinden aktif/pasif yapılabilir; tüm aktif lisanslar tüm içeriğe erişebilir (kategori bazlı kısıtlama yok).
 
 ## Sağlık Kontrolü
 

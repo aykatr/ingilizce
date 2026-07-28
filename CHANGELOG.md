@@ -2,6 +2,20 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.3.0] - 2026-07-28
+
+### Eklendi
+
+- `licenses` tablosu migration'ı ve `App\Models\License`
+- `App\Controllers\Admin\LicenseController` — lisans oluşturma, listeleme, aktif/pasif toggle
+- Kök dizinde bağımsız `play.php` giriş noktası — token doğrulama, geçersiz/pasif lisans için 403
+- Lisans oluşturulunca token + oynama linki (`play.php?token=...`) üretimi ve admin panelinde gösterimi
+- Admin panel navigasyonuna "Lisanslar" bağlantısı, tablo/sayfa başlığı stilleri
+
+### Not
+
+- QR kod görseli üretimi kapsam dışı bırakıldı — sistem yalnızca token + link üretir, QR görseli kullanıcı tarafından harici bir araçla üretilecek.
+
 ## [0.2.0] - 2026-07-28
 
 ### Eklendi

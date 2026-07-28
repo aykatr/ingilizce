@@ -11,6 +11,7 @@
         <span class="admin-brand"><?= e(config('app.name')) ?></span>
         <nav class="admin-nav">
             <a href="<?= base_url('admin/dashboard') ?>">Panel</a>
+            <a href="<?= base_url('admin/licenses') ?>">Lisanslar</a>
             <a href="<?= base_url('admin/password') ?>">Şifre Değiştir</a>
             <form method="POST" action="<?= base_url('admin/logout') ?>" class="logout-form">
                 <?= csrf_field() ?>
