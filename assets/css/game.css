@@ -206,6 +206,157 @@
     box-shadow: 0 3px 0 var(--yippee-purple-dark);
 }
 
+/* QR paneli (Giriş Ekranı) — yalnızca görsel, tarama/kamera/doğrulama yapmaz */
+.qr-panel {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    margin-top: 1.25rem;
+    overflow: hidden;
+}
+
+.qr-tabs {
+    display: flex;
+}
+
+.qr-tab {
+    flex: 1;
+    border: none;
+    background: #f3eefb;
+    color: rgba(30, 20, 60, 0.55);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+}
+
+.qr-tab.is-active {
+    background: #fff;
+    color: var(--yippee-purple);
+    border-bottom-color: var(--yippee-purple);
+}
+
+.qr-tab-panel {
+    padding: 1.25rem 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.qr-tab-panel.is-hidden {
+    display: none;
+}
+
+.qr-frame {
+    width: 140px;
+    height: 140px;
+    border: 3px dashed var(--yippee-purple);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f5fd;
+    overflow: hidden;
+}
+
+.qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.qr-placeholder {
+    font-size: 3rem;
+    color: var(--yippee-purple);
+    opacity: 0.5;
+}
+
+.qr-camera-btn {
+    padding: 0.65rem 1.75rem;
+    font-size: 0.95rem;
+}
+
+.qr-caption {
+    font-size: 0.75rem;
+    color: rgba(30, 20, 60, 0.6);
+    margin: 0;
+    text-align: center;
+}
+
+.qr-license-input {
+    text-align: center;
+    font-weight: 700;
+}
+
+.qr-license-btn {
+    width: 100%;
+    padding: 0.6rem;
+}
+
+/* Nasıl Çalışır? paneli (Giriş Ekranı) — statik/dekoratif */
+.how-it-works {
+    background: rgba(107, 63, 160, 0.9);
+    border-radius: 24px;
+    padding: 1.1rem 1rem;
+    width: 100%;
+    max-width: 480px;
+    margin-top: 1.25rem;
+}
+
+.how-it-works-title {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: #fff;
+    text-align: center;
+    margin: 0 0 0.85rem;
+}
+
+.how-it-works-steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem;
+}
+
+.how-step {
+    flex: 1 1 120px;
+    max-width: 150px;
+    text-align: center;
+    color: #fff;
+}
+
+.how-step-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+}
+
+.how-step-title {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.how-step-desc {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+}
+
 .trust-badges {
     display: flex;
     flex-wrap: wrap;
@@ -1066,4 +1217,103 @@
     .menu-icon-label { font-size: 0.55rem; }
     .menu-stats-bar { justify-content: center; padding: 0.75rem; }
     .menu-progress-block { flex-basis: 100%; }
+    .btn-nav { font-size: 0.8rem; padding: 0.6rem 0.85rem; white-space: nowrap; }
+}
+
+/* Tablet — mevcut mobil düzen korunur, yalnızca ölçek büyür (kontrollü genişleme) */
+@media (min-width: 768px) {
+    html {
+        font-size: 17px;
+    }
+
+    .game-scene-content {
+        max-width: 720px;
+    }
+
+    .icon-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.3rem;
+    }
+
+    .menu-icon-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 1.6rem;
+    }
+
+    .welcome-card,
+    .qr-panel {
+        max-width: 480px;
+    }
+
+    .how-it-works {
+        max-width: 560px;
+    }
+
+    .card-image-frame .image-placeholder,
+    .card-image-frame img {
+        min-height: 260px;
+    }
+
+    .option-image,
+    .option-image-placeholder {
+        height: 115px;
+    }
+
+    .qr-frame {
+        width: 170px;
+        height: 170px;
+    }
+}
+
+/* Desktop — aynı ekranlar, aynı yerleşim; ölçek biraz daha büyür, içerik ortada geniş bir panel olarak kalır */
+@media (min-width: 1024px) {
+    html {
+        font-size: 18px;
+    }
+
+    .game-scene-content {
+        max-width: 900px;
+    }
+
+    .icon-btn {
+        width: 66px;
+        height: 66px;
+        font-size: 1.45rem;
+    }
+
+    .menu-icon-circle {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+    }
+
+    .welcome-card,
+    .qr-panel {
+        max-width: 540px;
+    }
+
+    .how-it-works {
+        max-width: 640px;
+    }
+
+    .card-image-frame .image-placeholder,
+    .card-image-frame img {
+        min-height: 340px;
+    }
+
+    .option-image,
+    .option-image-placeholder {
+        height: 140px;
+    }
+
+    .qr-frame {
+        width: 190px;
+        height: 190px;
+    }
+
+    .menu-card-title {
+        font-size: 1rem;
+    }
 }

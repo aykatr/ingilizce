@@ -174,9 +174,20 @@ Faz 9'a geçmeden önce istenen mimari revizyon: oyun akışına, tüm soruları
 
 ## Faz 9 — Optimizasyon
 
+Faz başlamadan önce kapsam güncellendi: önce Version 1.0 öncesi bir **UI/kalite kontrol turu** (referans tasarımlarla birebir görsel uyum) yapılıyor, ardından asıl Faz 9 (performans/güvenlik/production hazırlığı) başlayacak. Bu tur 5 aşamalı işletildi: Aşama 1 (UI Denetimi, kod yazmadan rapor) → kullanıcı onayı → Aşama 2 (referansa uyum) → Aşama 4 (responsive) → Aşama 5 (test). Aşama 3 (küçük UX iyileştirmeleri: hover/press efektleri, loading durumları) ayrı bir onay bekliyor, bu turda uygulanmadı.
+
+- [x] **UI Denetim Raporu** — Giriş Ekranı, Kart Seçim Menüsü, Soru Ekranı canlı olarak (mobil/tablet/desktop) üç referans görselle karşılaştırıldı, ✓/⚠ formatında raporlandı, kod yazılmadan kullanıcıya sunuldu.
+- [x] **Giriş Ekranı — QR/Lisans Kodu paneli (kararlaştırılan kapsam: yalnızca görsel)**: Kamera API, QR tarayıcı, manuel lisans doğrulama, yeni route/controller **geliştirilmedi** — kullanıcının açık kararı buydu. Bunun yerine `StartScreenService::IMAGE_FIELDS`'e yeni bir `qr_image` alanı eklendi (`/admin/settings/start-screen` → "QR Kod Görseli"), mevcut görsel yükleme/kaldırma/placeholder deseniyle birebir aynı (görsel yoksa nötr `.qr-placeholder` ikonu gösterilir, kırık görsel asla görünmez). "QR Kodu ile Giriş / Lisans Kodu ile Giriş" iki sekmesi saf istemci-taraflı CSS-class toggle ile çalışır (`game-ui.js`, ağa hiçbir istek gitmez); "KAMERAYI AÇ" ve lisans "DOĞRULA" butonlarına kasıtlı olarak hiçbir click handler bağlanmadı (`disabled` — tamamen dekoratif). "Nasıl Çalışır?" 3 adımlı panel de statik/dekoratif olarak eklendi.
+- [x] **Soru Ekranı alt butonları — yeniden işlevlendirildi (kullanıcı kararı)**: Eski "Önceki/Sonraki" (çok-sorulu inceleme modu, Kart Seçim Menüsü'nden sonra hiçbir zaman aktif olamıyordu) kaldırıldı; aynı buton yerleşiminde **"🏠 Ana Menü"** (Kart Seçim Menüsü'ne döner, üstteki `#btn-home` ile aynı davranış) ve **"🔄 Tekrar Oyna"** (`engine.start(engine.lastQuestionId)` ile **aynı kartı** sıfırdan başlatır — can/süre/skor yalnızca o kart için sıfırlanır, ziyaret-boyu Toplam Puan/Rozet/Tamamlanan Kart `MenuProgressService` sayesinde zaten dokunulmadan kalır, ek bir backend değişikliği gerekmedi). `GameEngine.goToPrevious()/goToNext()` metotları silinmedi (dormant, modüler korundu), yalnızca `game-ui.js` artık onları çağırmıyor.
+- [x] **Masaüstü/tablet responsive genişleme (kullanıcı kararı: "büyüt/genişlet")**: `game.css`'e `@media (min-width: 768px)` ve `@media (min-width: 1024px)` breakpoint'leri eklendi — kök `font-size` kademeli artırılıp (17px/18px) mevcut `rem` tabanlı ölçüler otomatik büyüdü, `.game-scene-content` max-width (560→720→900px) ve birkaç `px`-tabanlı bileşen (ikon butonlar, kart görseli çerçeveleri, QR çerçevesi) ayrıca büyütüldü. Üç ekranın da yapısı/yerleşimi değişmedi, yalnızca ölçek.
+- [x] Kart Seçim Menüsü referans tasarımına göre daha önce yapılan görsel revizyon (bkz. yukarıdaki bölüm) bu turda değişmeden korundu.
+
+**Kapsam dışı (bilinçli, kullanıcı kararı):** Gerçek kamera/QR tarama, manuel lisans kodu doğrulama backend'i — yalnızca görsel iskelet var, "ileride gerçek QR tarayıcı geliştirilmek istenirse aynı alan yeniden kullanılabilir" notuyla bilinçli olarak dekoratif bırakıldı.
+
+**Teslim:** Playwright ile 11 yeni fonksiyonel kontrol (`test-stage2-ui.js` — QR sekme geçişi, QR placeholder, alt buton yeniden işlevi, Tekrar Oyna'nın canı sıfırlaması, Ana Menü'nün tamamlanma saymaması, 3 viewport'ta yatay taşma yok) — **11/11 geçti**. Mevcut 15 (`test-card-menu.js`) + 26 (`test-audio.js`) regresyon paketi tekrar çalıştırıldı, hepsi temiz. Admin QR Görseli yükleme/kaldırma curl ile uçtan uca doğrulandı.
+
 - [ ] Performans
 - [ ] Güvenlik
-- [ ] Responsive kontrolleri
 - [ ] Son testler
 - [ ] Production hazırlığı
 

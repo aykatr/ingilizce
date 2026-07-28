@@ -70,12 +70,15 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Yippee! Akıllı Kart Oyunu ile eğlenerek İngilizce öğren.');
     });
 
-    document.getElementById('btn-home').addEventListener('click', () => {
+    function confirmReturnToMenu() {
         if (confirm('Kart Seçim Menüsü\'ne dönmek istiyor musun? Bu karttaki ilerleme kaybolacak.')) {
             stopTimer();
             returnToMenu();
         }
-    });
+    }
+
+    document.getElementById('btn-home').addEventListener('click', confirmReturnToMenu);
+    document.getElementById('btn-bottom-menu').addEventListener('click', confirmReturnToMenu);
 
     document.getElementById('btn-start-game').addEventListener('click', () => {
         audio.prime();
@@ -105,13 +108,31 @@ document.addEventListener('DOMContentLoaded', () => {
         returnToMenu();
     });
 
-    document.getElementById('btn-prev').addEventListener('click', () => {
+    document.getElementById('btn-bottom-replay').addEventListener('click', async () => {
+        if (!engine.lastQuestionId) {
+            return;
+        }
+
         stopTimer();
-        engine.goToPrevious();
+
+        try {
+            await engine.start(engine.lastQuestionId);
+        } catch (error) {
+            alert(error.message);
+        }
     });
 
-    document.getElementById('btn-next').addEventListener('click', () => {
-        engine.goToNext();
+    // Dekoratif QR/Lisans Kodu sekmeleri (Giriş Ekranı) — yalnızca görsel, ağa hiçbir istek gitmez.
+    document.querySelectorAll('.qr-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.qr-tab').forEach((t) => t.classList.remove('is-active'));
+            tab.classList.add('is-active');
+
+            const target = tab.dataset.qrTab;
+            document.querySelectorAll('.qr-tab-panel').forEach((panel) => {
+                panel.classList.toggle('is-hidden', panel.dataset.qrPanel !== target);
+            });
+        });
     });
 
     document.getElementById('btn-question-audio').addEventListener('click', () => {
@@ -448,9 +469,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('score-label').textContent = engine.score;
         renderHearts(engine.lives, engine.maxLives);
-
-        document.getElementById('btn-prev').disabled = !engine.canGoPrevious();
-        document.getElementById('btn-next').disabled = !engine.canGoNext();
 
         stopTimer();
 

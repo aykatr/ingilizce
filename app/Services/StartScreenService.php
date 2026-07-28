@@ -17,6 +17,7 @@ class StartScreenService
         'decor_image_1' => 'start_decor_image_1',
         'decor_image_2' => 'start_decor_image_2',
         'decor_image_3' => 'start_decor_image_3',
+        'qr_image' => 'start_qr_image',
     ];
 
     private const TEXT_FIELDS = [

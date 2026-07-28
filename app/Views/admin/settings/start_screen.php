@@ -11,6 +11,7 @@ $imageFields = [
     'decor_image_1' => 'Alt Dekor Görseli 1 (opsiyonel)',
     'decor_image_2' => 'Alt Dekor Görseli 2 (opsiyonel)',
     'decor_image_3' => 'Alt Dekor Görseli 3 (opsiyonel)',
+    'qr_image' => 'QR Kod Görseli (Giriş Ekranı — yalnızca görsel amaçlı, tarama/doğrulama yapmaz)',
 ];
 ?>
 

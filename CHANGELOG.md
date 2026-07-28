@@ -2,6 +2,24 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.10.2] - 2026-07-28
+
+Faz 9 öncesi UI kalite kontrol turu (Version 1.0 öncesi son rötuşlar). Kod yazmadan önce bir UI Denetim Raporu sunuldu, kullanıcının 3 kararı doğrultusunda uygulandı. İş mantığı/veri modeli/GameEngine'e dokunulmadı.
+
+### Eklendi
+
+- Giriş Ekranı'na "QR Kodu ile Giriş / Lisans Kodu ile Giriş" sekmeli paneli — **tamamen dekoratif** (kamera API/tarama/doğrulama/yeni route yok, kullanıcının açık kararı). Admin panelde yeni bir görsel alanı: `/admin/settings/start-screen` → "QR Kod Görseli" (`StartScreenService::IMAGE_FIELDS`, mevcut görsel yükleme deseniyle aynı, boşsa nötr placeholder).
+- Giriş Ekranı'na statik "Nasıl Çalışır?" 3 adımlı bilgi paneli.
+- `game.css`'e tablet (`768px`) ve desktop (`1024px`) breakpoint'leri — kök font-size kademeli büyütülerek mevcut `rem` tabanlı ölçüler otomatik ölçeklendi, `.game-scene-content` genişliği (560→720→900px) ve birkaç `px`-tabanlı bileşen ayrıca büyütüldü. Yapı/yerleşim değişmedi.
+
+### Değiştirildi
+
+- Soru Ekranı'nın eski "Önceki/Sonraki" butonları (Kart Seçim Menüsü'nden sonra hiçbir zaman aktif olamıyordu) **"🏠 Ana Menü"** ve **"🔄 Tekrar Oyna"** olarak yeniden işlevlendirildi — aynı yerleşim, yeni işlev. "Tekrar Oyna" aynı kartı can/süre/skor sıfırlanmış başlatır, ziyaret-boyu toplamlar (`MenuProgressService`) etkilenmez.
+
+### Test
+
+Playwright ile 11 yeni fonksiyonel kontrol (`test-stage2-ui.js`) — 11/11 geçti. Mevcut 15 (`test-card-menu.js`) + 26 (`test-audio.js`) regresyon paketi tekrar çalıştırıldı, hepsi temiz. Admin QR Görseli yükleme/kaldırma curl ile doğrulandı.
+
 ## [0.10.1] - 2026-07-28
 
 Kart Seçim Menüsü'nün kullanıcı referans tasarımına göre görsel revizyonu. İş mantığı, veri modeli ve GameEngine'e dokunulmadı — yalnızca `#screen-menu` markup+CSS'i.

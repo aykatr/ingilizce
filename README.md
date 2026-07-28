@@ -173,6 +173,14 @@ Can her kart için bağımsız olduğundan, rozet koşullarındaki "N doğru cev
 
 **Görünüm**: Kullanıcının sağladığı referans tasarıma göre — mor ışın/bulut zeminli panel, "Ana Sayfa"/"Ses" ikon-etiket butonları, kart başına döngüsel pastel renk teması (8 tema, kart sırasına göre), her kartın altında 3 yıldız + "Tamamlandı"/"Başlamadın" durum etiketi, alt kısımda Toplam Puan/Tamamlanan Kart/Rozetler ve yeşil bir ilerleme çubuğu. Veri modelimiz yalnızca tamamlandı/tamamlanmadı ikili durumunu tuttuğu için referans tasarımdaki bazı kartların kısmi (1/3, 2/3) yıldız görünümü uygulanmadı — tamamlanan kart 3/3 dolu yıldız, tamamlanmamış kart boş yıldız gösterir.
 
+## Faz 9 Öncesi UI Kalite Kontrol Turu
+
+Version 1.0 öncesi, üç ekran (Giriş/Kart Seçim Menüsü/Soru Ekranı) referans tasarımlarla görsel olarak hizalandı — iş mantığı/veri modeli/GameEngine değişmedi.
+
+- **Giriş Ekranı**: "QR Kodu ile Giriş / Lisans Kodu ile Giriş" sekmeli paneli eklendi — **tamamen dekoratif** (kamera/tarama/doğrulama yapmaz, sekmeler arası geçiş saf istemci-taraflı). QR alanı yeni bir admin ayarı kullanır: `/admin/settings/start-screen` → **"QR Kod Görseli"** (görsel yüklenmemişse nötr bir placeholder ikonu gösterilir). "Nasıl Çalışır?" 3 adımlı bilgi paneli statik olarak eklendi.
+- **Soru Ekranı**: Artık hiçbir zaman aktif olamayan eski "Önceki/Sonraki" (çok-sorulu inceleme modu) butonları kaldırıldı; aynı konumda **"🏠 Ana Menü"** (Kart Seçim Menüsü'ne döner) ve **"🔄 Tekrar Oyna"** (aynı kartı can/süre/skor sıfırlanmış olarak yeniden başlatır, ziyaret-boyu toplam puan/rozet/tamamlanan-kart sayısı korunur) butonları var.
+- **Masaüstü/Tablet**: `768px`/`1024px` breakpoint'lerinde içerik ve yazı tipleri kontrollü şekilde büyütüldü — uygulama artık geniş ekranlarda "telefon ekranı gibi ortada küçük kalmıyor", yapısı/yerleşimi değişmeden ölçekleniyor.
+
 ## Puan, Başarı Mesajları, Rozetler ve Geçiş Mesajları
 
 Dört bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif), **Geçiş Mesajları** (`/admin/transition-messages` — başlık+ses+animasyon tipi+aktif/pasif, tek grup; her doğru cevapta sıradaki bir soru varsa aktif bir mesaj rastgele seçilir, `AudioManager`'ın `transition` kategorisiyle çalınır).

@@ -62,6 +62,50 @@
                     </div>
                 </div>
 
+                <!-- QR paneli yalnızca görsel amaçlıdır; tarama/kamera/doğrulama işlemi yapmaz. Gerçek giriş play.php?t=TOKEN ile zaten tamamlanmıştır. -->
+                <div class="qr-panel">
+                    <div class="qr-tabs">
+                        <button type="button" class="qr-tab is-active" data-qr-tab="qr">📷 QR KODU İLE GİRİŞ</button>
+                        <button type="button" class="qr-tab" data-qr-tab="license">🔒 LİSANS KODU İLE GİRİŞ</button>
+                    </div>
+                    <div class="qr-tab-panel" data-qr-panel="qr">
+                        <div class="qr-frame">
+                            <?php if (!empty($startScreen['qr_image'])): ?>
+                                <img src="<?= e(base_url($startScreen['qr_image'])) ?>" alt="" class="qr-image">
+                            <?php else: ?>
+                                <div class="qr-placeholder">▦</div>
+                            <?php endif; ?>
+                        </div>
+                        <button type="button" class="btn-pill-primary qr-camera-btn">📷 KAMERAYI AÇ</button>
+                        <p class="qr-caption">Kartını okutmak için kamerayı kullan.</p>
+                    </div>
+                    <div class="qr-tab-panel is-hidden" data-qr-panel="license">
+                        <input type="text" class="form-control qr-license-input" placeholder="Lisans kodunu gir (ör. K3F9-8H2M-QW7X)" disabled>
+                        <button type="button" class="btn-pill-primary qr-license-btn" disabled>DOĞRULA</button>
+                    </div>
+                </div>
+
+                <div class="how-it-works">
+                    <h2 class="how-it-works-title">NASIL ÇALIŞIR?</h2>
+                    <div class="how-it-works-steps">
+                        <div class="how-step">
+                            <span class="how-step-icon">🃏</span>
+                            <div class="how-step-title">Kartını hazırla</div>
+                            <div class="how-step-desc">Akıllı kartındaki QR kodunu bul.</div>
+                        </div>
+                        <div class="how-step">
+                            <span class="how-step-icon">📱</span>
+                            <div class="how-step-title">QR kodu okut</div>
+                            <div class="how-step-desc">Kamerayı aç ve QR kodu okut.</div>
+                        </div>
+                        <div class="how-step">
+                            <span class="how-step-icon">🎮</span>
+                            <div class="how-step-title">Oyuna başla</div>
+                            <div class="how-step-desc">Kartındaki içeriklerle hemen oynamaya başla!</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="trust-badges">
                     <span>🛡️ Güvenli</span>
                     <span>🙂 Çocuk Dostu</span>
@@ -227,9 +271,9 @@
                 </div>
 
                 <div class="bottom-row">
-                    <button type="button" class="btn-nav" id="btn-prev">← ÖNCEKİ</button>
+                    <button type="button" class="btn-nav" id="btn-bottom-menu">🏠 ANA MENÜ</button>
                     <div class="hearts-pill" id="hearts-pill"></div>
-                    <button type="button" class="btn-nav" id="btn-next">SONRAKİ →</button>
+                    <button type="button" class="btn-nav" id="btn-bottom-replay">🔄 TEKRAR OYNA</button>
                 </div>
             </section>
 
