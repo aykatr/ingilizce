@@ -106,6 +106,12 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/badges/{id}/edit` | Rozet düzenleme formu (giriş gerektirir) |
 | `POST /admin/badges/{id}` | Rozet güncelle (giriş gerektirir) |
 | `POST /admin/badges/{id}/delete` | Rozet sil (giriş gerektirir) |
+| `GET /admin/transition-messages` | Geçiş mesajları listesi (giriş gerektirir) |
+| `GET /admin/transition-messages/create` | Yeni geçiş mesajı formu (giriş gerektirir) |
+| `POST /admin/transition-messages` | Geçiş mesajı oluştur (giriş gerektirir) |
+| `GET /admin/transition-messages/{id}/edit` | Geçiş mesajı düzenleme formu (giriş gerektirir) |
+| `POST /admin/transition-messages/{id}` | Geçiş mesajı güncelle (giriş gerektirir) |
+| `POST /admin/transition-messages/{id}/delete` | Geçiş mesajı sil (giriş gerektirir) |
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
@@ -146,15 +152,13 @@ Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif 
 - **Önceki/Sonraki**: Önceki yalnızca tamamlanmış sorularda çalışır (istemci tarafında önbelleklenmiş, salt-okunur inceleme); Sonraki yalnızca inceleme modundayken aktiftir.
 - **Başlangıç ekranı içeriği** (arka plan, logo, maskot görselleri, başlık/açıklama/buton metni) tamamen admin panelden yönetilir (`/admin/settings/start-screen`); kod içinde sabit görsel/metin yoktur. Yüklenmemiş görseller sayfa bozulmadan gizlenir.
 
-**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** geçiş mesajları (soru arası).
+## Puan, Başarı Mesajları, Rozetler ve Geçiş Mesajları
 
-## Puan, Başarı Mesajları ve Rozetler
-
-Üç bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif).
+Dört bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif), **Geçiş Mesajları** (`/admin/transition-messages` — başlık+ses+animasyon tipi+aktif/pasif, tek grup; her doğru cevapta sıradaki bir soru varsa aktif bir mesaj rastgele seçilir, `AudioManager`'ın `transition` kategorisiyle çalınır).
 
 Rozet koşulları kod içine sabit yazılmaz: her rozet bir `condition_type` (+ opsiyonel `condition_value`) taşır, `App\Services\BadgeService` bunu genişletilebilir bir closure haritasıyla değerlendirir. Hazır koşullar: ilk doğru cevap, belirli sayıda doğru cevap, hatasız tamamlama, süre dolmadan tamamlama, belirli puana ulaşma — yenileri kolayca eklenebilir. Değerlendirme tamamen sunucu tarafında (`GameSessionService`); istemci yalnızca hangi rozetlerin kazanıldığı bilgisini alır ve gösterir. Aynı rozet aynı oyun oturumunda ikinci kez verilmez.
 
-Kazanılan rozetler oyun sırasında altın renkli bir bildirimle (görsel+ses+animasyon) gösterilir, oturum sonunda sonuç ekranında özetlenir.
+Kazanılan rozetler oyun sırasında altın renkli bir bildirimle (görsel+ses+animasyon) gösterilir, oturum sonunda sonuç ekranında özetlenir. Geçiş mesajı ise mor renkli bir toast olarak, doğru cevap bildiriminden kısa bir süre sonra gösterilir; son soru cevaplandığında (geçilecek sıradaki soru olmadığı için) hiç gösterilmez.
 
 ## AudioManager
 
@@ -163,7 +167,7 @@ Tüm ses oynatma `assets/js/audio-manager.js` üzerinden geçer (`window.AudioMa
 - **Play / Stop / Pause / Resume / Replay**, **Queue** (düşük öncelikli istekler mevcut ses bitene kadar bekler, otomatik sıradaki çalar), **Preload/Cache** (aynı ses tekrar istenirse yeniden indirilmez), **Fade In/Out**, **Volume**, **Mute/Unmute**, **Öncelik (priority)** — kategoriye göre varsayılan, istek bazında override edilebilir.
 - Aynı anda yalnızca bir "ana" ses çalar (kart/soru/seçenek/doğru/yanlış/geçiş/rozet kategorileri bu kanalı paylaşır); arayüz sesleri (`ui` kategorisi) ayrı kanalda, ana sesi etkilemez.
 - Aynı sesin üst üste binmesi engellenir; eşit veya yüksek öncelikli yeni istek mevcut sesi 180ms fade-out ile keser, düşük öncelikli istek sıraya alınır.
-- `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/badge kategorileri Faz 7'de bağlandı (başarı mesajları ve rozetlerin sesleri); `transition` kategorisi AudioManager'da hazır ama henüz gerçek ses dosyası yok (geçiş mesajları bu fazın kapsamında değildi).
+- `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/badge kategorileri Faz 7'de, `transition` kategorisi geçiş mesajları modülüyle bağlandı — 8 kategorinin tamamı artık kullanımda.
 
 ## Sağlık Kontrolü
 

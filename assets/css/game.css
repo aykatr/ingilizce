@@ -696,6 +696,24 @@
     color: #241a4a;
 }
 
+/* Transition message (between questions) */
+.transition-toast {
+    position: fixed;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(107, 63, 160, 0.94);
+    color: #fff;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 0.65rem 1.5rem;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    z-index: 21;
+    text-align: center;
+}
+
 @media (max-width: 480px) {
     .question-text { font-size: 1.1rem; }
     .welcome-card { padding: 1.25rem 1rem; }

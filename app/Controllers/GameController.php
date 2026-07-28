@@ -9,12 +9,14 @@ use App\Repositories\BadgeRepository;
 use App\Repositories\QuestionOptionRepository;
 use App\Repositories\QuestionRepository;
 use App\Repositories\SettingRepository;
+use App\Repositories\TransitionMessageRepository;
 use App\Services\AchievementMessageService;
 use App\Services\BadgeService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\GameSessionService;
 use App\Services\MediaUploadService;
 use App\Services\SettingService;
+use App\Services\TransitionMessageService;
 
 class GameController extends BaseController
 {
@@ -29,7 +31,8 @@ class GameController extends BaseController
             new QuestionOptionRepository(),
             new SettingService(new SettingRepository()),
             new AchievementMessageService(new AchievementMessageRepository(), $media),
-            new BadgeService(new BadgeRepository(), $media)
+            new BadgeService(new BadgeRepository(), $media),
+            new TransitionMessageService(new TransitionMessageRepository(), $media)
         );
     }
 

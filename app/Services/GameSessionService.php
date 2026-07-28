@@ -17,6 +17,7 @@ class GameSessionService
         private SettingService $settings,
         private AchievementMessageService $messages,
         private BadgeService $badges,
+        private TransitionMessageService $transitions,
     ) {
     }
 
@@ -103,6 +104,7 @@ class GameSessionService
                 'correctPosition' => $correctOption['position'],
                 'gameOver' => false,
                 'message' => $this->formatMessage($this->messages->pickRandom(AchievementMessageService::TYPE_CORRECT)),
+                'transitionMessage' => $isFinished ? null : $this->formatMessage($this->transitions->pickRandom()),
                 'earnedBadges' => array_map($this->formatBadge(...), $earnedBadges),
                 'next' => $this->currentPayload(),
             ];

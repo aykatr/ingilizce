@@ -188,6 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('score-label').textContent = result.score;
         showEarnedBadges(result.earnedBadges);
 
+        if (result.correct && result.transitionMessage) {
+            setTimeout(() => showTransitionToast(result.transitionMessage), 700);
+        }
+
         if (result.correct) {
             setTimeout(() => {
                 if (engine.finished) {
@@ -280,6 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
             gsap.to(el, { opacity: 0, y: -20, duration: 0.35, delay: 1.6, onComplete: () => el.remove() });
         } else {
             setTimeout(() => el.remove(), 2000);
+        }
+    }
+
+    function showTransitionToast(message) {
+        const el = document.createElement('div');
+        el.className = 'transition-toast';
+        el.textContent = message.title;
+        document.body.appendChild(el);
+
+        if (message.audio) {
+            audio.play(message.audio, { category: 'transition' });
+        }
+
+        if (window.gsap) {
+            gsap.set(el, { opacity: 0, y: 10 });
+            gsap.to(el, { opacity: 1, y: 0, duration: 0.3 });
+            playAnimation(el, message.animationType || 'fade');
+            gsap.to(el, { opacity: 0, duration: 0.3, delay: 1.1, onComplete: () => el.remove() });
+        } else {
+            setTimeout(() => el.remove(), 1400);
         }
     }
 

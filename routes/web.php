@@ -10,6 +10,7 @@ use App\Controllers\Admin\PasswordController;
 use App\Controllers\Admin\QuestionController;
 use App\Controllers\Admin\SettingController;
 use App\Controllers\Admin\StartScreenController;
+use App\Controllers\Admin\TransitionMessageController;
 use App\Controllers\GameController;
 use App\Controllers\HomeController;
 use App\Core\Router;
@@ -65,6 +66,13 @@ $router->post('/admin/badges', [BadgeController::class, 'store']);
 $router->get('/admin/badges/{id}/edit', [BadgeController::class, 'edit']);
 $router->post('/admin/badges/{id}', [BadgeController::class, 'update']);
 $router->post('/admin/badges/{id}/delete', [BadgeController::class, 'destroy']);
+
+$router->get('/admin/transition-messages', [TransitionMessageController::class, 'index']);
+$router->get('/admin/transition-messages/create', [TransitionMessageController::class, 'create']);
+$router->post('/admin/transition-messages', [TransitionMessageController::class, 'store']);
+$router->get('/admin/transition-messages/{id}/edit', [TransitionMessageController::class, 'edit']);
+$router->post('/admin/transition-messages/{id}', [TransitionMessageController::class, 'update']);
+$router->post('/admin/transition-messages/{id}/delete', [TransitionMessageController::class, 'destroy']);
 
 $router->post('/play/api/start', [GameController::class, 'start']);
 $router->post('/play/api/answer', [GameController::class, 'answer']);

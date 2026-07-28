@@ -2,6 +2,20 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.8.1] - 2026-07-28
+
+Faz 7 onayından sonra, Faz 8'e geçmeden önce tamamlanan ek modül: Geçiş Mesajları (Faz 7'nin orijinal taslağında vardı, o fazın kapsamına dahil edilmemişti).
+
+### Eklendi
+
+- `transition_messages` tablosu + `App\Services\TransitionMessageService` — tek grup (başlık+ses+animasyon+aktif/pasif), `/admin/transition-messages` CRUD, oyun sırasında aktif bir mesaj rastgele seçilir (`pickRandom()`)
+- `GameSessionService` entegrasyonu — her doğru cevapta, sıradaki bir soru varsa (`isFinished=false`) yanıta `transitionMessage` eklenir; son soruda `null` (gösterilecek bir "sıradaki" olmadığı için)
+- Frontend: mor renkli `.transition-toast` bildirimi, doğru cevap bildiriminden ~700ms sonra gösterilir, `AudioManager`'ın daha önce bağlı olmayan `transition` kategorisini kullanır (öncelik=6, `correct/wrong`'un altında — mevcut sesi kesmeden sıraya girer)
+
+### Test
+
+Admin CRUD ve oyun akışı entegrasyonu (sıradaki soru varken/yokken mesaj var/yok) curl ile uçtan uca doğrulandı. Playwright ile 2 ek kontrol (geçiş toastı görünürlüğü, son soruda gösterilmemesi) — 2/2 geçti. Faz 5 (58 kontrol), Faz 6 (26 kontrol) ve Faz 7 (8 kontrol) regresyon paketleri tekrar çalıştırıldı, hepsi temiz — toplam 68/68.
+
 ## [0.8.0] - 2026-07-28
 
 Faz 7 — Puan ve Rozet Sistemi. Puan, başarı mesajları ve rozetler bağımsız sistemler olarak geliştirildi.

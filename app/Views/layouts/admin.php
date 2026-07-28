@@ -17,6 +17,7 @@
                 <a href="<?= base_url('admin/questions') ?>" class="nav-link d-inline">Soru Modülleri</a>
                 <a href="<?= base_url('admin/messages') ?>" class="nav-link d-inline">Başarı Mesajları</a>
                 <a href="<?= base_url('admin/badges') ?>" class="nav-link d-inline">Rozetler</a>
+                <a href="<?= base_url('admin/transition-messages') ?>" class="nav-link d-inline">Geçiş Mesajları</a>
                 <a href="<?= base_url('admin/licenses') ?>" class="nav-link d-inline">Lisanslar</a>
                 <a href="<?= base_url('admin/settings') ?>" class="nav-link d-inline">Site Ayarları</a>
                 <a href="<?= base_url('admin/password') ?>" class="nav-link d-inline">Şifre Değiştir</a>
