@@ -9,7 +9,7 @@ Fiziksel eğitim kartlarının üzerindeki QR kod ile çalışan çocuk eğitim 
 - Composer
 - Apache (`mod_rewrite`, `AllowOverride All`)
 
-Frontend bağımlılıkları (Bootstrap 5, QRCode.js) CDN üzerinden yüklenir — npm/build adımı yoktur.
+Frontend bağımlılıkları (Bootstrap 5, QRCode.js, GSAP, Google Fonts) CDN üzerinden yüklenir — npm/build adımı yoktur.
 
 ## Kurulum
 
@@ -50,7 +50,7 @@ Detaylar için [CLAUDE.md](CLAUDE.md).
 ```
 app/
   Controllers/    Controller sınıfları (BaseController üzerinden türetilir) — yalnızca HTTP orkestrasyonu
-  Services/       İş kuralları (AuthService, LicenseService, SettingService, CategoryService, QuestionService, MediaUploadService)
+  Services/       İş kuralları (AuthService, LicenseService, SettingService, CategoryService, QuestionService, MediaUploadService, StartScreenService, GameSessionService)
   Repositories/   Domain'e özel veri erişimi; arayüzler Repositories/Contracts altında
   Models/         Tablo gateway'leri (BaseModel üzerinden türetilir)
   Core/           Framework çekirdeği: Router, Request, View, Config, Env, Database, Session, Auth, Migration
@@ -80,7 +80,8 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/licenses/create` | Yeni lisans formu (giriş gerektirir) |
 | `POST /admin/licenses` | Lisans oluştur (giriş gerektirir) |
 | `POST /admin/licenses/{id}/toggle` | Lisansı aktif/pasif yap (giriş gerektirir) |
-| `GET/POST /admin/settings` | Site URL + varsayılan süre/puan ayarı (giriş gerektirir) |
+| `GET/POST /admin/settings` | Site URL + varsayılan süre/puan/can ayarı (giriş gerektirir) |
+| `GET/POST /admin/settings/start-screen` | Başlangıç ekranı görselleri/metinleri (giriş gerektirir) |
 | `GET /admin/categories` | Kategori listesi (giriş gerektirir) |
 | `GET /admin/categories/create` | Yeni kategori formu (giriş gerektirir) |
 | `POST /admin/categories` | Kategori oluştur (giriş gerektirir) |
@@ -96,11 +97,21 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
+## Oyun API'si (herkese açık, lisans gerektirir)
+
+| Route | Açıklama |
+|---|---|
+| `POST /play/api/start` | Oyun oturumunu başlatır/sıfırlar, ilk soruyu döndürür |
+| `POST /play/api/answer` | Seçilen şıkkı gönderir (`position=A\|B\|C\|D`), sonucu ve (doğruysa) sıradaki soruyu döndürür |
+| `POST /play/api/timeout` | Süre dolduğunda çağrılır, yanlış cevap gibi işlenir |
+
+Bu uçlar yalnızca `play.php?t=...` üzerinden geçerli bir lisansla girildiyse çalışır (session flag), ve CSRF token gerektirir.
+
 ## Lisans Sistemi
 
 Bir lisans oluşturulduğunda rastgele bir `token` (URL için, 32 karakter) ve insan-okunur bir `code` (ör. `K3F9-8H2M-QW7X`, referans/yazdırma için) üretilir. Oynama linki `{site_url}/play.php?t={token}` şeklindedir; `site_url` admin panelinden (`/admin/settings`) değiştirilebilir. QR kod görseli **istemci tarafında** QRCode.js ile admin panelde (lisans listesindeki "QR" butonu → modal) üretilir; PHP tarafında QR kütüphanesi kullanılmaz.
 
-`play.php` kök dizinde bağımsız bir giriş noktasıdır (MVC router'dan geçmez, `index.php` ile aynı şekilde bootstrap olur, parametre adı `t`). Token'ı doğrular; lisans yoksa, pasifse veya süresi dolmuşsa 403 ile nedeni açıklayan bir sayfa gösterir, geçerliyse oyun sayfasını render eder (oyun motoru Faz 5'te eklenecek) ve aktivasyon/son kullanım/son cihaz/son IP bilgilerini günceller. Lisans durumu (Aktif / Pasif / Süresi Doldu) admin panelde `is_active` ve opsiyonel `expires_at` alanlarından hesaplanarak gösterilir. Tüm aktif lisanslar tüm içeriğe erişebilir (kategori bazlı kısıtlama yok).
+`play.php` kök dizinde bağımsız bir giriş noktasıdır (MVC router'dan geçmez, `index.php` ile aynı şekilde bootstrap olur, parametre adı `t`). Token'ı doğrular; lisans yoksa, pasifse veya süresi dolmuşsa 403 ile nedeni açıklayan bir sayfa gösterir, geçerliyse oyun kabuğunu (başlangıç/oyun/sonuç ekranları) render eder ve aktivasyon/son kullanım/son cihaz/son IP bilgilerini günceller. Lisans durumu (Aktif / Pasif / Süresi Doldu) admin panelde `is_active` ve opsiyonel `expires_at` alanlarından hesaplanarak gösterilir. Tüm aktif lisanslar tüm içeriğe erişebilir (kategori bazlı kısıtlama yok — lisansların kategori/pakete bağlanması ileride Faz 11 "Kart Paketleri" ile gelecek).
 
 ## Soru Modülü
 
@@ -109,6 +120,21 @@ Her soru bağımsız bir modüldür (kategori, kart görseli/sesi, İngilizce so
 Medya formatları: görsel WebP (tercih)/PNG/JPG (≤5MB), ses MP3 (zorunlu destek)/OGG (opsiyonel destek) (≤10MB). Yüklenen dosyalar `uploads/questions/{id}/` ve `uploads/options/{id}/` altında saklanır; yeni dosya yüklendiğinde eskisi otomatik silinir, "kaldır" seçeneğiyle dosya tamamen silinebilir. Soru silindiğinde ilişkili tüm medya dosyaları da diskten temizlenir.
 
 Soru oluşturma/düzenleme tek sayfada, sekmeler halinde yapılır: Genel Bilgiler, Kart, Soru, Seçenekler, Önizleme (önizleme yalnızca kaydedilmiş sorularda gösterilir).
+
+## Oyun Motoru
+
+Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif sorular sıraya konur → **Başlangıç Ekranı** (yalnızca ilk girişte, "Başla" butonuyla) → sorular tek tek (her geçişte sunucudan) yüklenir → **Sonuç Ekranı**.
+
+- Sunucu tarafı oyun durumu (`App\Services\GameSessionService`) PHP session'da tutulur: soru sırası, mevcut index, skor, can, o anki soruda denenmiş şıklar. Doğru cevap sunucuda doğrulanır, istemciye asla sızdırılmaz.
+- İstemci tarafı `GameEngine` sınıfı (`assets/js/game-engine.js`) saf mantık — DOM'a dokunmaz. `assets/js/game-ui.js` DOM/GSAP render katmanı.
+- **Süre**: geriye sayar, son 5 saniyede kırmızıya döner + nabız animasyonu; süre dolarsa yanlış cevap sayılır.
+- **Can**: varsayılan 3 (Site Ayarları'ndan değiştirilebilir), yanlış cevapta azalır, 0 olunca oyun biter. Can, tüm oyun boyunca paylaşılır (soru başına sıfırlanmaz).
+- **Doğru cevap**: buton yeşil, diğerleri pasif, +puan animasyonu, otomatik geçiş.
+- **Yanlış cevap**: buton kırmızı ve devre dışı kalır, doğru cevap hemen gösterilmez — kalan şıklarla tekrar denenebilir.
+- **Önceki/Sonraki**: Önceki yalnızca tamamlanmış sorularda çalışır (istemci tarafında önbelleklenmiş, salt-okunur inceleme); Sonraki yalnızca inceleme modundayken aktiftir.
+- **Başlangıç ekranı içeriği** (arka plan, logo, maskot görselleri, başlık/açıklama/buton metni) tamamen admin panelden yönetilir (`/admin/settings/start-screen`); kod içinde sabit görsel/metin yoktur. Yüklenmemiş görseller sayfa bozulmadan gizlenir.
+
+**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** AudioManager (queue/fade/cache/priority — Faz 6), rozet sistemi, rastgele doğru/yanlış/geçiş mesajları (Faz 7). Ses butonları arayüzde çalışıyor ama basit `Audio.play()` ile, tam AudioManager değil.
 
 ## Sağlık Kontrolü
 

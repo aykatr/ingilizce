@@ -14,8 +14,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | 2 | Admin Paneli | ✅ Tamamlandı |
 | 3 | Lisans Sistemi | ✅ Tamamlandı (genişletilmiş kapsam) |
 | 4 | Soru Modülü (Seçenek Sistemi dahil) | ✅ Tamamlandı |
-| 5 | Oyun Motoru | ⏳ Onay bekleniyor |
-| 6 | Ses Sistemi | ⏳ Bekliyor |
+| 5 | Oyun Motoru | ✅ Tamamlandı |
+| 6 | Ses Sistemi | ⏳ Onay bekleniyor |
 | 7 | Puan ve Rozet Sistemi | ⏳ Bekliyor |
 | 8 | Medya ve Ayarlar | ⏳ Bekliyor |
 | 9 | Optimizasyon | ⏳ Bekliyor |
@@ -84,14 +84,25 @@ Soru Modülü Sistemi ilkesi: her soru bağımsız bir modül, birbirine bağlı
 
 **Teslim:** Kategori CRUD (silme koruması dahil), soru CRUD (medya yükleme/değiştirme/kaldırma, varsayılan süre-puan mirası, doğru cevap validasyonu), soru silme (medya dosyaları dahil temizlik) `ingilizce.test` üzerinde gerçek dosya yüklemeleriyle uçtan uca test edildi. **Kapsam dışı (bilinçli):** oyun ekranı, soru akışı, ses oynatma, kullanıcı deneyimi — bunlar Faz 5'te ele alınacak, bu faz yalnızca içerik yönetim sistemidir.
 
-## Faz 5 — Oyun Motoru
+## Faz 5 — Oyun Motoru ✅
 
-- [ ] Oyun ekranı (referans tasarım: üstte logo/ana sayfa/ses/rozet/skor/ilerleme/soru sayısı/süre, ortada soru+ses+kart, altta 2x2 seçenek+ses, en altta önceki/can/sonraki)
-- [ ] Kart gösterimi
-- [ ] Soru akışı
-- [ ] Süre
-- [ ] Can sistemi (varsayılan 3, admin değiştirebilir)
-- [ ] Önceki / Sonraki
+Referans tasarıma (kullanıcı tarafından sağlanan giriş/kart ekranı görselleri) sadık kalınarak geliştirildi. Bootstrap yalnızca grid için, animasyonlar CSS + GSAP ile.
+
+- [x] Başlangıç ekranı — lisans doğrulandıktan sonra gösterilir (yalnızca ilk girişte), tüm görselleri/metinleri admin panelden yönetilebilir (`/admin/settings/start-screen`, `StartScreenService`); görsel yüklenmemişse zarifçe gizlenir, tasarım bozulmaz
+- [x] Oyun ekranı — kart görseli, İngilizce soru + dinleme butonu, 2x2 seçenek grid'i (A/B/C/D renkli rozetler + ses butonu), ilerleme çubuğu ("Soru X/Y"), skor rozeti
+- [x] Soru akışı — her geçişte yeni soru sunucu tarafından (`GameSessionService`) servis edilir, tüm sorular tek seferde belleğe alınmaz; lisans artık kategoriye bağlı değil, tüm aktif sorular `sort_order`'a göre tek oturumda oynanır
+- [x] Süre sayacı — geriye sayar, son 5 saniyede renk değişimi + pulse animasyonu (CSS), süre biterse yanlış cevap kabul edilir (`/play/api/timeout`)
+- [x] Can sistemi — varsayılan 3 (Site Ayarları'ndan değiştirilebilir: `default_lives`), yanlış cevapta can azalır, can biterse oyun biter (Game Over)
+- [x] Doğru cevap — buton yeşil, diğerleri pasifleşir, +puan animasyonu (GSAP), otomatik geçiş
+- [x] Yanlış cevap — buton kırmızı ve devre dışı kalır, doğru cevap hemen gösterilmez, çocuk kalan seçeneklerle tekrar deneyebilir; can biterse oyun sonlanır
+- [x] Önceki / Sonraki — Önceki yalnızca tamamlanan (istemci tarafında zaten önbelleğe alınmış) sorular için salt-okunur inceleme sağlar; Sonraki yalnızca inceleme modundayken aktif olur, mevcut soru tamamlanmadan aktif olmaz
+- [x] İlerleme çubuğu — "Soru X / Y" + dolum yüzdesi
+- [x] GameEngine — istemci tarafı JS sınıfı (`assets/js/game-engine.js`, DOM'a hiç dokunmaz), sunucu tarafında `App\Services\GameSessionService` (oturum durumu: soru sırası, skor, can, index, cevap doğrulama — asla istemciye güvenilmez). UI katmanı (`assets/js/game-ui.js`) ayrı dosyada, yalnızca DOM/GSAP.
+- [x] Sonuç ekranı (basit) — final skor, tamamlanan/toplam soru veya Game Over durumu, "Tekrar Oyna" butonu
+
+**Kapsam dışı (bilinçli, sonraki fazlara bırakıldı):** AudioManager (Faz 6), Rozet sistemi (Faz 7), Geçiş mesajları (Faz 7), rastgele doğru/yanlış mesajları (Faz 7). Ses butonları arayüzde mevcut ve basit `Audio.play()` ile çalışıyor ama queue/fade/cache/priority gibi AudioManager özellikleri yok — bunlar kasıtlı olarak eklenmedi.
+
+**Teslim:** Oyun oturumu başlatma, doğru/yanlış cevap akışı (tekrar deneme dahil), zaman aşımı, can sistemi (game over dahil), puan/varsayılan süre-puan mirası, önceki/sonraki inceleme, güvenlik guard'ları (yetkisiz erişim 403, CSRF 419, oturum bitince 422) ve admin başlangıç ekranı ayarları (metin + görsel yükleme/kaldırma) `ingilizce.test` üzerinde gerçek API çağrılarıyla uçtan uca test edildi. Görsel pixel-doğrulama tarayıcı ekran görüntüsü aracı olmadığı için yapılamadı — kullanıcının tarayıcıda gözden geçirmesi önerilir.
 
 ## Faz 6 — Ses Sistemi
 

@@ -10,6 +10,7 @@ class SettingService
     private const SITE_URL_KEY = 'site_url';
     private const DEFAULT_DURATION_KEY = 'default_duration_seconds';
     private const DEFAULT_POINTS_KEY = 'default_points';
+    private const DEFAULT_LIVES_KEY = 'default_lives';
 
     public function __construct(private SettingRepositoryInterface $settings)
     {
@@ -45,7 +46,14 @@ class SettingService
         return $value !== null ? (int) $value : 10;
     }
 
-    public function updateDefaults(int $duration, int $points): void
+    public function getDefaultLives(): int
+    {
+        $value = $this->settings->get(self::DEFAULT_LIVES_KEY);
+
+        return $value !== null ? (int) $value : 3;
+    }
+
+    public function updateDefaults(int $duration, int $points, int $lives): void
     {
         if ($duration < 1) {
             throw new ValidationException('Varsayılan süre en az 1 saniye olmalı.');
@@ -55,7 +63,12 @@ class SettingService
             throw new ValidationException('Varsayılan puan negatif olamaz.');
         }
 
+        if ($lives < 1) {
+            throw new ValidationException('Can sayısı en az 1 olmalı.');
+        }
+
         $this->settings->set(self::DEFAULT_DURATION_KEY, (string) $duration);
         $this->settings->set(self::DEFAULT_POINTS_KEY, (string) $points);
+        $this->settings->set(self::DEFAULT_LIVES_KEY, (string) $lives);
     }
 }

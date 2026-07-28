@@ -25,4 +25,10 @@ class SettingRepository implements SettingRepositoryInterface
         );
         $stmt->execute(['key' => $key, 'value' => $value]);
     }
+
+    public function delete(string $key): void
+    {
+        $stmt = Database::connection()->prepare('DELETE FROM settings WHERE `key` = :key');
+        $stmt->execute(['key' => $key]);
+    }
 }

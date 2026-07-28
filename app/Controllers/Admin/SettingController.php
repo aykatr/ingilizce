@@ -25,6 +25,7 @@ class SettingController extends AdminBaseController
             'siteUrl' => $this->settingService->getSiteUrl(),
             'defaultDuration' => $this->settingService->getDefaultDuration(),
             'defaultPoints' => $this->settingService->getDefaultPoints(),
+            'defaultLives' => $this->settingService->getDefaultLives(),
             'error' => Session::getFlash('error'),
             'success' => Session::getFlash('success'),
         ], 'admin');
@@ -43,7 +44,8 @@ class SettingController extends AdminBaseController
             $this->settingService->updateSiteUrl((string) $request->input('site_url'));
             $this->settingService->updateDefaults(
                 (int) $request->input('default_duration_seconds', 30),
-                (int) $request->input('default_points', 10)
+                (int) $request->input('default_points', 10),
+                (int) $request->input('default_lives', 3)
             );
             Session::flash('success', 'Ayarlar güncellendi.');
         } catch (ValidationException $e) {

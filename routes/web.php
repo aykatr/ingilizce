@@ -7,6 +7,8 @@ use App\Controllers\Admin\LicenseController;
 use App\Controllers\Admin\PasswordController;
 use App\Controllers\Admin\QuestionController;
 use App\Controllers\Admin\SettingController;
+use App\Controllers\Admin\StartScreenController;
+use App\Controllers\GameController;
 use App\Controllers\HomeController;
 use App\Core\Router;
 
@@ -31,6 +33,8 @@ $router->post('/admin/licenses/{id}/toggle', [LicenseController::class, 'toggle'
 
 $router->get('/admin/settings', [SettingController::class, 'edit']);
 $router->post('/admin/settings', [SettingController::class, 'update']);
+$router->get('/admin/settings/start-screen', [StartScreenController::class, 'edit']);
+$router->post('/admin/settings/start-screen', [StartScreenController::class, 'update']);
 
 $router->get('/admin/categories', [CategoryController::class, 'index']);
 $router->get('/admin/categories/create', [CategoryController::class, 'create']);
@@ -45,5 +49,11 @@ $router->post('/admin/questions', [QuestionController::class, 'store']);
 $router->get('/admin/questions/{id}/edit', [QuestionController::class, 'edit']);
 $router->post('/admin/questions/{id}', [QuestionController::class, 'update']);
 $router->post('/admin/questions/{id}/delete', [QuestionController::class, 'destroy']);
+
+$router->post('/play/api/start', [GameController::class, 'start']);
+$router->get('/play/api/state', [GameController::class, 'state']);
+$router->get('/play/api/question', [GameController::class, 'question']);
+$router->post('/play/api/answer', [GameController::class, 'answer']);
+$router->post('/play/api/timeout', [GameController::class, 'timeout']);
 
 return $router;

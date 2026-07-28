@@ -2,6 +2,30 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.6.0] - 2026-07-28
+
+Faz 5 — Oyun Motoru. Kullanıcının sağladığı referans tasarıma (giriş ekranı + kart/oyun ekranı) sadık kalınarak geliştirildi.
+
+### Eklendi
+
+- `App\Services\GameSessionService` — sunucu taraflı oyun oturumu: soru sırası (tüm aktif sorular, kategoriye bağlı olmaksızın `sort_order`), skor, can, cevap doğrulama (asla istemciye güvenilmez)
+- `App\Controllers\GameController` + `/play/api/start|answer|timeout` — session-flag ve CSRF korumalı JSON API
+- `assets/js/game-engine.js` — istemci taraflı `GameEngine` sınıfı (ES2023, DOM'suz, saf state/mantık)
+- `assets/js/game-ui.js` — DOM render + GSAP animasyon katmanı (timer, can, doğru/yanlış geri bildirimi, +puan animasyonu, önceki/sonraki inceleme modu)
+- `assets/css/game.css` — oyun ekranına özel pixel-sadık stil (Bootstrap yalnızca grid için)
+- `app/Views/play/index.php` — tek sayfa kabuk: başlangıç / oyun / sonuç ekranları (JS ile geçiş yapılır, sayfa yenilenmez)
+- `App\Services\StartScreenService` + `/admin/settings/start-screen` — başlangıç ekranının tüm görselleri (arka plan, logo, maskotlar, robot, roket, balon, dekor) ve metinleri (başlık, açıklama, buton yazısı) admin panelden yönetilir; kod içinde sabit görsel/metin yok, yüklenmemiş görseller zarifçe gizlenir
+- `SettingService::getDefaultLives()/updateDefaults()` genişletildi — varsayılan can sayısı `/admin/settings`'ten yönetiliyor
+- `SettingRepository::delete()` — bir ayarı "varsayılana dön" anlamında silme (görsel kaldırma / boş metin senaryoları için)
+
+### Değişti
+
+- `play.php` artık `Session::start()` çağırıyor ve doğrulama sonrası `play_authorized` session flag'i set ediyor (oyun API'lerinin yetki kontrolü için)
+
+### Test
+
+Oyun oturumu başlatma, doğru/yanlış cevap akışı (tekrar deneme dahil), zaman aşımı, can sistemi (game over dahil), soru bazlı puan/süre override, güvenlik guard'ları (403/419/422) ve admin başlangıç ekranı ayarları `ingilizce.test` üzerinde gerçek API çağrılarıyla uçtan uca test edildi. Görsel pixel-doğrulama için tarayıcı ekran görüntüsü aracı mevcut değildi — kod, sağlanan referans görsellerin analizinden üretildi.
+
 ## [0.5.0] - 2026-07-28
 
 Faz 4 — Soru Modülü (eski Faz 5 "Seçenek Sistemi" kapsamı dahil edildi, roadmap buna göre yeniden numaralandı).

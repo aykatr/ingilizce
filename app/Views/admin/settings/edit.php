@@ -1,4 +1,7 @@
-<h1 class="h4 mb-3">Site Ayarları</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Site Ayarları</h1>
+    <a href="<?= base_url('admin/settings/start-screen') ?>" class="btn btn-outline-primary btn-sm">Başlangıç Ekranı Ayarları</a>
+</div>
 
 <?php if (!empty($error)): ?>
     <div class="alert alert-danger"><?= e($error) ?></div>
@@ -26,6 +29,11 @@
                 <label for="default_points" class="form-label">Varsayılan Puan</label>
                 <input type="number" id="default_points" name="default_points" class="form-control" value="<?= e((string) $defaultPoints) ?>" min="0" required>
                 <div class="form-text">Soru bazında puan belirtilmezse bu değer kullanılır.</div>
+            </div>
+            <div class="mb-3">
+                <label for="default_lives" class="form-label">Can Sayısı</label>
+                <input type="number" id="default_lives" name="default_lives" class="form-control" value="<?= e((string) $defaultLives) ?>" min="1" required>
+                <div class="form-text">Oyun başına verilen can sayısı.</div>
             </div>
             <button type="submit" class="btn btn-primary">Kaydet</button>
         </form>
