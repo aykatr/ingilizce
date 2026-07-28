@@ -7,6 +7,10 @@
     --yippee-orange: #ffa726;
     --yippee-heart: #ef4f7a;
     --card-radius: 22px;
+    /* Faz 9 Aşama 3 — tüm butonlar/kartlar aynı animasyon dilini paylaşsın diye tek noktadan tanımlanan
+       geçiş süreleri: basma (kısa/keskin) ve hover (biraz daha yumuşak) için. */
+    --transition-press: 0.1s ease;
+    --transition-hover: 0.18s ease;
 }
 
 .game-body {
@@ -89,6 +93,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     cursor: pointer;
     flex-shrink: 0;
+    transition: transform var(--transition-press), box-shadow var(--transition-hover);
 }
 
 .icon-btn:active {
@@ -198,7 +203,7 @@
     padding: 0.85rem 2.5rem;
     cursor: pointer;
     box-shadow: 0 6px 0 var(--yippee-purple-dark);
-    transition: transform 0.08s ease;
+    transition: transform var(--transition-press), box-shadow var(--transition-hover);
 }
 
 .btn-pill-primary:active {
@@ -232,6 +237,7 @@
     padding: 0.75rem 0.5rem;
     cursor: pointer;
     border-bottom: 3px solid transparent;
+    transition: background-color var(--transition-hover), color var(--transition-hover);
 }
 
 .qr-tab.is-active {
@@ -552,7 +558,7 @@
     height: 100%;
     cursor: pointer;
     border: 3px solid transparent;
-    transition: transform 0.08s ease, border-color 0.15s ease, background-color 0.15s ease;
+    transition: transform var(--transition-press), box-shadow var(--transition-hover), border-color var(--transition-hover), background-color var(--transition-hover);
     text-align: center;
 }
 
@@ -645,11 +651,63 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    transition: transform var(--transition-press), box-shadow var(--transition-hover);
+}
+
+.btn-nav:active {
+    transform: scale(0.96);
 }
 
 .btn-nav:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+}
+
+/* Loading geri bildirimi — yalnızca gerçekten ağ isteği bekleyen aksiyonlarda (kart seçimi, cevap
+   gönderme, Tekrar Oyna) kısa süreliğine eklenen bir sınıf. Saf CSS animasyonu (transform: rotate),
+   layout/repaint tetiklemez. İşlem bitince JS sınıfı kaldırır, buton otomatik eski haline döner. */
+.is-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+}
+
+.menu-card.is-loading::after,
+.btn-nav.is-loading::after,
+.option-card.is-loading::after {
+    border-color: rgba(107, 63, 160, 0.25);
+    border-top-color: var(--yippee-purple);
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-loading::after {
+        animation: none;
+        border-top-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .menu-card.is-loading::after,
+    .btn-nav.is-loading::after,
+    .option-card.is-loading::after {
+        border-top-color: var(--yippee-purple);
+    }
 }
 
 .hearts-pill {
@@ -938,6 +996,11 @@
     font-size: 1.4rem;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
     border: 3px solid rgba(255, 255, 255, 0.85);
+    transition: transform var(--transition-press), box-shadow var(--transition-hover);
+}
+
+.menu-icon-btn:active .menu-icon-circle {
+    transform: scale(0.94);
 }
 
 .menu-icon-home {
@@ -1016,11 +1079,15 @@
     align-items: center;
     gap: 0.3rem;
     cursor: pointer;
-    transition: transform 0.12s ease;
+    transition: transform var(--transition-press), box-shadow var(--transition-hover);
 }
 
 .menu-card:active {
     transform: scale(0.96);
+}
+
+.menu-card:disabled {
+    opacity: 0.7;
 }
 
 .menu-card.is-completed {
@@ -1264,6 +1331,49 @@
     .qr-frame {
         width: 170px;
         height: 170px;
+    }
+
+    /* Hover efektleri — yalnızca tablet/desktop genişliğinde (bu breakpoint 1024px+ için de geçerli
+       olduğundan tek bir tanım yeterli); mobilde hiç uygulanmaz. Hafif scale/shadow/renk geçişi,
+       hepsi transform+box-shadow+background-color üzerinden (compositor-dostu, layout tetiklemez). */
+    .btn-pill-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 0 var(--yippee-purple-dark);
+    }
+
+    .btn-nav:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+    }
+
+    .icon-btn:hover {
+        transform: scale(1.06);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+    }
+
+    .menu-icon-circle:hover {
+        transform: scale(1.06);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+    }
+
+    .option-card:hover:not(.is-disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+    }
+
+    .menu-card:hover:not(:disabled) {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .qr-tab:hover:not(.is-active) {
+        background: #e9def9;
+        color: var(--yippee-purple);
+    }
+
+    .qr-camera-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 0 var(--yippee-purple-dark);
     }
 }
 

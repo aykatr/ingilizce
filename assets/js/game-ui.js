@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.menu-card').forEach((card) => {
         card.addEventListener('click', async () => {
             card.disabled = true;
+            card.classList.add('is-loading');
 
             try {
                 await engine.start(Number(card.dataset.questionId));
@@ -100,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(error.message);
             } finally {
                 card.disabled = false;
+                card.classList.remove('is-loading');
             }
         });
     });
@@ -115,10 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stopTimer();
 
+        const replayBtn = document.getElementById('btn-bottom-replay');
+        replayBtn.classList.add('is-loading');
+
         try {
             await engine.start(engine.lastQuestionId);
         } catch (error) {
             alert(error.message);
+        } finally {
+            replayBtn.classList.remove('is-loading');
         }
     });
 
@@ -161,7 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             stopTimer();
-            await handleAnswer(position);
+
+            // Cevap sonucu gelene kadar tüm seçenekleri kilitle, tıklanan kartta spinner göster.
+            const allOptionCards = document.querySelectorAll('.option-card');
+            allOptionCards.forEach((c) => { c.style.pointerEvents = 'none'; });
+            card.classList.add('is-loading');
+
+            try {
+                await handleAnswer(position);
+            } finally {
+                allOptionCards.forEach((c) => { c.style.pointerEvents = ''; });
+                card.classList.remove('is-loading');
+            }
         });
     });
 
@@ -430,7 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ['A', 'B', 'C', 'D'].forEach((pos) => {
             const option = question.options.find((o) => o.position === pos) || {};
             const card = document.getElementById('option-' + pos);
-            card.classList.remove('is-correct', 'is-wrong', 'is-disabled');
+            card.classList.remove('is-correct', 'is-wrong', 'is-disabled', 'is-loading');
+            card.style.pointerEvents = '';
 
             document.getElementById('option-' + pos + '-title').textContent = option.title || '';
 

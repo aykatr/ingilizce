@@ -180,6 +180,7 @@ Version 1.0 öncesi, üç ekran (Giriş/Kart Seçim Menüsü/Soru Ekranı) refer
 - **Giriş Ekranı**: "QR Kodu ile Giriş / Lisans Kodu ile Giriş" sekmeli paneli eklendi — **tamamen dekoratif** (kamera/tarama/doğrulama yapmaz, sekmeler arası geçiş saf istemci-taraflı). QR alanı yeni bir admin ayarı kullanır: `/admin/settings/start-screen` → **"QR Kod Görseli"** (görsel yüklenmemişse nötr bir placeholder ikonu gösterilir). "Nasıl Çalışır?" 3 adımlı bilgi paneli statik olarak eklendi.
 - **Soru Ekranı**: Artık hiçbir zaman aktif olamayan eski "Önceki/Sonraki" (çok-sorulu inceleme modu) butonları kaldırıldı; aynı konumda **"🏠 Ana Menü"** (Kart Seçim Menüsü'ne döner) ve **"🔄 Tekrar Oyna"** (aynı kartı can/süre/skor sıfırlanmış olarak yeniden başlatır, ziyaret-boyu toplam puan/rozet/tamamlanan-kart sayısı korunur) butonları var.
 - **Masaüstü/Tablet**: `768px`/`1024px` breakpoint'lerinde içerik ve yazı tipleri kontrollü şekilde büyütüldü — uygulama artık geniş ekranlarda "telefon ekranı gibi ortada küçük kalmıyor", yapısı/yerleşimi değişmeden ölçekleniyor.
+- **UX iyileştirmeleri (Aşama 3)**: Tablet/desktop'ta butonlar, kartlar ve ikon butonlarında hafif hover efekti (scale/shadow, mobilde uygulanmaz); kart seçimi, cevap gönderme ve "Tekrar Oyna" işlemlerinde ağ isteği sürerken dönen bir spinner gösterilir (işlem bitince otomatik kaybolur); tüm butonlar artık aynı geçiş süresini/easing'i paylaşıyor.
 
 ## Puan, Başarı Mesajları, Rozetler ve Geçiş Mesajları
 

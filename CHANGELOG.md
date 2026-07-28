@@ -2,6 +2,28 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.10.3] - 2026-07-28
+
+Faz 9 Aşama 3 — UX iyileştirmeleri (onaylı kısıtlarla: yeni özellik yok, GameEngine/veri modeli değişmedi).
+
+### Eklendi
+
+- Tablet/desktop hover efektleri (`@media (min-width: 768px)`, mobilde uygulanmaz) — butonlar, ikon butonlar, Kart Seçim Menüsü kartları, cevap kartları, QR sekmeleri: hafif `transform`/`box-shadow` değişimi, abartılı animasyon yok.
+- Loading geri bildirimi (`.is-loading` CSS spinner) — kart seçimi, cevap gönderme, "Tekrar Oyna" işlemlerinde; işlem bitince (başarı/hata fark etmeksizin) otomatik kalkıyor. Cevap gönderirken diğer 3 seçenek geçici kilitleniyor (çifte-tıklama önlenir).
+- `prefers-reduced-motion: reduce` desteği spinner animasyonu için.
+
+### Değiştirildi
+
+- Tüm buton/kart geçiş süreleri iki ortak token'a toplandı: `--transition-press` (0.1s), `--transition-hover` (0.18s) — önceden 0.08s/0.12s/0.15s karışıktı. Eksik `:active`/`transition` tanımları tamamlandı (`.btn-nav`, `.menu-icon-circle`).
+
+### İncelendi, değiştirilmedi
+
+- GSAP animasyon süreleri gözden geçirildi — mevcut değerler zaten "akıcı/kısa/çocuk dostu" aralıkta, gereksiz değişiklik yapılmadı.
+
+### Test
+
+Playwright ile 9 yeni kontrol (`test-stage3-ux.js` — desktop hover, mobilde hover yokluğu, 3 aksiyonda loading spinner mid-flight + cleanup, cevap sırasında diğer seçeneklerin kilitlenmesi) — 9/9 geçti. Mevcut 15+11+26 regresyon paketi tekrar çalıştırıldı, hepsi temiz.
+
 ## [0.10.2] - 2026-07-28
 
 Faz 9 öncesi UI kalite kontrol turu (Version 1.0 öncesi son rötuşlar). Kod yazmadan önce bir UI Denetim Raporu sunuldu, kullanıcının 3 kararı doğrultusunda uygulandı. İş mantığı/veri modeli/GameEngine'e dokunulmadı.
