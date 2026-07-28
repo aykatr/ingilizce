@@ -8,6 +8,8 @@ use App\Services\Exceptions\ValidationException;
 class SettingService
 {
     private const SITE_URL_KEY = 'site_url';
+    private const DEFAULT_DURATION_KEY = 'default_duration_seconds';
+    private const DEFAULT_POINTS_KEY = 'default_points';
 
     public function __construct(private SettingRepositoryInterface $settings)
     {
@@ -27,5 +29,33 @@ class SettingService
         }
 
         $this->settings->set(self::SITE_URL_KEY, rtrim($url, '/'));
+    }
+
+    public function getDefaultDuration(): int
+    {
+        $value = $this->settings->get(self::DEFAULT_DURATION_KEY);
+
+        return $value !== null ? (int) $value : 30;
+    }
+
+    public function getDefaultPoints(): int
+    {
+        $value = $this->settings->get(self::DEFAULT_POINTS_KEY);
+
+        return $value !== null ? (int) $value : 10;
+    }
+
+    public function updateDefaults(int $duration, int $points): void
+    {
+        if ($duration < 1) {
+            throw new ValidationException('Varsayılan süre en az 1 saniye olmalı.');
+        }
+
+        if ($points < 0) {
+            throw new ValidationException('Varsayılan puan negatif olamaz.');
+        }
+
+        $this->settings->set(self::DEFAULT_DURATION_KEY, (string) $duration);
+        $this->settings->set(self::DEFAULT_POINTS_KEY, (string) $points);
     }
 }

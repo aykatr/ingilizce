@@ -6,6 +6,9 @@
 !/storage/cache/.gitkeep
 /storage/uploads/*
 !/storage/uploads/.gitkeep
+/uploads/*
+!/uploads/.gitkeep
+!/uploads/.htaccess
 .DS_Store
 Thumbs.db
 /.claude/settings.local.json

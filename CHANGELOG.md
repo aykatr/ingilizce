@@ -2,6 +2,25 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.5.0] - 2026-07-28
+
+Faz 4 — Soru Modülü (eski Faz 5 "Seçenek Sistemi" kapsamı dahil edildi, roadmap buna göre yeniden numaralandı).
+
+### Eklendi
+
+- `categories`, `questions`, `question_options` tabloları (migration)
+- `App\Services\CategoryService` — kategori CRUD; bağlı soru varsa silme engellenir (DB'de FK `RESTRICT` ile de korunuyor)
+- `App\Services\QuestionService` — soru + tam olarak 4 seçenek (A/B/C/D) + medyayı tek işlemde yönetir; tek doğru cevap zorunluluğu ve zorunlu alan validasyonu
+- `App\Services\MediaUploadService` — görsel (WebP/PNG/JPG, ≤5MB) ve ses (MP3/OGG, ≤10MB) yükleme, değiştirme (eskiyi otomatik silme), kaldırma
+- `uploads/` dizini (proje kökü, web'den erişilebilir, `.htaccess` ile script çalıştırma engelli) — `questions/{id}/` ve `options/{id}/` alt klasörleri
+- Süre/puan için "genel varsayılan → Site Ayarları, istisna → soru bazında" deseni: `SettingService::getDefaultDuration()/getDefaultPoints()/updateDefaults()`, `/admin/settings` formuna eklendi
+- Admin panel: `/admin/categories` (index/create/edit/delete), `/admin/questions` (index/create/edit/delete) — tek sayfa sekmeli soru formu (Genel Bilgiler/Kart/Soru/Seçenekler/Önizleme)
+- Admin nav'a "Kategoriler" ve "Soru Modülleri" bağlantıları
+
+### Roadmap
+
+- Eski "Faz 5 — Seçenek Sistemi" içeriği Faz 4'e taşındı; sonraki tüm fazlar bir numara geriye kaydı (eski Faz 6 → yeni Faz 5, ... eski Faz 16 → yeni Faz 15)
+
 ## [0.4.0] - 2026-07-28
 
 Proje adı "Yippee Learning Platform" olarak netleşti (tam ürün spesifikasyonu iletildi); Faz 3 kapsamı bu spesifikasyona göre genişletildi ve Faz 1-3 kodu yeni mimariye göre revize edildi.

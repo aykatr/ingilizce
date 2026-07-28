@@ -11,8 +11,10 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
         <div class="container-fluid">
             <span class="navbar-brand fw-semibold mb-0"><?= e(config('app.name')) ?></span>
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex flex-wrap align-items-center gap-3">
                 <a href="<?= base_url('admin/dashboard') ?>" class="nav-link d-inline">Panel</a>
+                <a href="<?= base_url('admin/categories') ?>" class="nav-link d-inline">Kategoriler</a>
+                <a href="<?= base_url('admin/questions') ?>" class="nav-link d-inline">Soru Modülleri</a>
                 <a href="<?= base_url('admin/licenses') ?>" class="nav-link d-inline">Lisanslar</a>
                 <a href="<?= base_url('admin/settings') ?>" class="nav-link d-inline">Site Ayarları</a>
                 <a href="<?= base_url('admin/password') ?>" class="nav-link d-inline">Şifre Değiştir</a>
@@ -23,7 +25,7 @@
             </div>
         </div>
     </nav>
-    <main class="container py-4">
+    <main class="container-xl py-4">
         <?= $content ?>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
