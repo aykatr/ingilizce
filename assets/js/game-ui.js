@@ -270,12 +270,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('question-text').textContent = question.questionText;
 
         const cardImage = document.getElementById('card-image');
+        const cardImagePlaceholder = document.getElementById('card-image-placeholder');
 
         if (question.cardImage) {
             cardImage.src = question.cardImage;
             cardImage.style.display = '';
+            cardImagePlaceholder.style.display = 'none';
         } else {
             cardImage.style.display = 'none';
+            cardImagePlaceholder.style.display = '';
         }
 
         ['A', 'B', 'C', 'D'].forEach((pos) => {
@@ -286,12 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('option-' + pos + '-title').textContent = option.title || '';
 
             const img = document.getElementById('option-' + pos + '-image');
+            const imgPlaceholder = document.getElementById('option-' + pos + '-placeholder');
 
             if (option.image) {
                 img.src = option.image;
                 img.style.display = '';
+                imgPlaceholder.style.display = 'none';
             } else {
                 img.style.display = 'none';
+                imgPlaceholder.style.display = '';
             }
 
             if (view.readonly) {
@@ -337,15 +343,12 @@ document.addEventListener('DOMContentLoaded', () => {
         timeLeft = seconds;
         const badge = document.getElementById('timer-badge');
         badge.textContent = timeLeft;
-        badge.classList.remove('is-low');
+        badge.classList.toggle('is-low', timeLeft <= 5);
 
         timerInterval = setInterval(() => {
             timeLeft -= 1;
             badge.textContent = Math.max(timeLeft, 0);
-
-            if (timeLeft <= 5) {
-                badge.classList.add('is-low');
-            }
+            badge.classList.toggle('is-low', timeLeft <= 5);
 
             if (timeLeft <= 0) {
                 stopTimer();

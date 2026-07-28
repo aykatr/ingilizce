@@ -366,6 +366,26 @@
     max-height: 320px;
 }
 
+.image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1ecfb, #e4d9f7);
+    color: var(--yippee-purple);
+    font-size: 2.2rem;
+}
+
+.card-image-frame .image-placeholder {
+    height: 220px;
+}
+
+.option-image-placeholder {
+    height: 90px;
+    border-radius: 12px;
+    margin-bottom: 0.4rem;
+    font-size: 1.6rem;
+}
+
 /* Options grid */
 .options-grid {
     width: 100%;

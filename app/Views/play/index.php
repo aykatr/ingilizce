@@ -102,6 +102,7 @@
                     </button>
                     <div class="card-image-frame">
                         <img id="card-image" src="" alt="" style="display:none;">
+                        <div class="image-placeholder" id="card-image-placeholder">🖼️</div>
                     </div>
                 </div>
 
@@ -113,6 +114,7 @@
                                     <span class="option-badge option-badge-<?= $position ?>"><?= $position ?></span>
                                     <button type="button" class="icon-btn option-audio-btn" data-audio-position="<?= $position ?>" aria-label="Sesi dinle">🔊</button>
                                     <img class="option-image" id="option-<?= $position ?>-image" src="" alt="" style="display:none;">
+                                    <div class="option-image-placeholder image-placeholder" id="option-<?= $position ?>-placeholder">🖼️</div>
                                     <div class="option-title" id="option-<?= $position ?>-title"></div>
                                 </div>
                             </div>

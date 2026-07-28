@@ -2,6 +2,18 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.6.1] - 2026-07-28
+
+Faz 5 kapanışı öncesi Playwright ile kapsamlı görsel/fonksiyonel doğrulama (kullanıcı talebiyle). 58 otomatik kontrol — 0 konsol hatası, 0 network hatası.
+
+### Düzeltildi
+
+- Süre sayacında `is-low` (son 5 saniye kırmızı+pulse) sınıfı yalnızca ilk `setInterval` tick'inde uygulanıyordu; kısa süreli sorularda (ör. 2sn) bu görsel geri bildirim neredeyse hiç görünmüyordu. `startTimer()` artık başlangıç anında da kontrol ediyor (`assets/js/game-ui.js`).
+
+### Eklendi
+
+- Kart ve seçenek görselleri için `.image-placeholder` — görsel yüklenmemişse nötr bir ikon kutusu gösterilir (önceden `<img>` tamamen gizlenip boşluk bırakılıyordu; artık tasarım daha tutarlı doluyor)
+
 ## [0.6.0] - 2026-07-28
 
 Faz 5 — Oyun Motoru. Kullanıcının sağladığı referans tasarıma (giriş ekranı + kart/oyun ekranı) sadık kalınarak geliştirildi.
