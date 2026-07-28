@@ -1,9 +1,11 @@
 class GameEngine extends EventTarget {
     #csrfToken;
+    #audio;
 
-    constructor({ csrfToken }) {
+    constructor({ csrfToken, audioManager = null }) {
         super();
         this.#csrfToken = csrfToken;
+        this.#audio = audioManager;
         this.score = 0;
         this.lives = 0;
         this.maxLives = 0;
@@ -59,8 +61,48 @@ class GameEngine extends EventTarget {
             this.index = data.index;
             this.attempted = data.attempted || [];
             this.currentQuestion = data.question;
+            this.#preloadCurrentAudio();
         } else {
             this.currentQuestion = null;
+        }
+    }
+
+    /** Ses dosyalarının yolları her zaman soru verisinden (DB'den) gelir — burada sabit bir yol yoktur. */
+    #preloadCurrentAudio() {
+        if (!this.#audio || !this.currentQuestion) {
+            return;
+        }
+
+        const urls = [
+            this.currentQuestion.cardAudio,
+            this.currentQuestion.questionAudio,
+            ...this.currentQuestion.options.map((option) => option.audio),
+        ];
+
+        urls.filter(Boolean).forEach((url) => this.#audio.preload(url));
+    }
+
+    playCardAudio() {
+        const url = this.getDisplayedQuestion().question?.cardAudio;
+
+        if (url) {
+            this.#audio?.play(url, { category: 'card' });
+        }
+    }
+
+    playQuestionAudio() {
+        const url = this.getDisplayedQuestion().question?.questionAudio;
+
+        if (url) {
+            this.#audio?.play(url, { category: 'question' });
+        }
+    }
+
+    playOptionAudio(position) {
+        const option = this.getDisplayedQuestion().question?.options.find((o) => o.position === position);
+
+        if (option?.audio) {
+            this.#audio?.play(option.audio, { category: 'option' });
         }
     }
 
@@ -160,6 +202,7 @@ class GameEngine extends EventTarget {
                 this.index = data.next.index;
                 this.attempted = data.next.attempted || [];
                 this.currentQuestion = data.next.question;
+                this.#preloadCurrentAudio();
             }
         } else {
             this.attempted = data.attempted || this.attempted;

@@ -9,7 +9,7 @@ Fiziksel eğitim kartlarının üzerindeki QR kod ile çalışan çocuk eğitim 
 - Composer
 - Apache (`mod_rewrite`, `AllowOverride All`)
 
-Frontend bağımlılıkları (Bootstrap 5, QRCode.js, GSAP, Google Fonts) CDN üzerinden yüklenir — npm/build adımı yoktur.
+Frontend bağımlılıkları (Bootstrap 5, QRCode.js, GSAP, Howler.js, Google Fonts) CDN üzerinden yüklenir — npm/build adımı yoktur.
 
 ## Kurulum
 
@@ -126,7 +126,7 @@ Soru oluşturma/düzenleme tek sayfada, sekmeler halinde yapılır: Genel Bilgil
 Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif sorular sıraya konur → **Başlangıç Ekranı** (yalnızca ilk girişte, "Başla" butonuyla) → sorular tek tek (her geçişte sunucudan) yüklenir → **Sonuç Ekranı**.
 
 - Sunucu tarafı oyun durumu (`App\Services\GameSessionService`) PHP session'da tutulur: soru sırası, mevcut index, skor, can, o anki soruda denenmiş şıklar. Doğru cevap sunucuda doğrulanır, istemciye asla sızdırılmaz.
-- İstemci tarafı `GameEngine` sınıfı (`assets/js/game-engine.js`) saf mantık — DOM'a dokunmaz. `assets/js/game-ui.js` DOM/GSAP render katmanı.
+- İstemci tarafı `GameEngine` sınıfı (`assets/js/game-engine.js`) saf mantık — DOM'a dokunmaz, ses için yalnızca `AudioManager` API'sini çağırır. `assets/js/game-ui.js` DOM/GSAP render katmanı.
 - **Süre**: geriye sayar, son 5 saniyede kırmızıya döner + nabız animasyonu; süre dolarsa yanlış cevap sayılır.
 - **Can**: varsayılan 3 (Site Ayarları'ndan değiştirilebilir), yanlış cevapta azalır, 0 olunca oyun biter. Can, tüm oyun boyunca paylaşılır (soru başına sıfırlanmaz).
 - **Doğru cevap**: buton yeşil, diğerleri pasif, +puan animasyonu, otomatik geçiş.
@@ -134,7 +134,16 @@ Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif 
 - **Önceki/Sonraki**: Önceki yalnızca tamamlanmış sorularda çalışır (istemci tarafında önbelleklenmiş, salt-okunur inceleme); Sonraki yalnızca inceleme modundayken aktiftir.
 - **Başlangıç ekranı içeriği** (arka plan, logo, maskot görselleri, başlık/açıklama/buton metni) tamamen admin panelden yönetilir (`/admin/settings/start-screen`); kod içinde sabit görsel/metin yoktur. Yüklenmemiş görseller sayfa bozulmadan gizlenir.
 
-**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** AudioManager (queue/fade/cache/priority — Faz 6), rozet sistemi, rastgele doğru/yanlış/geçiş mesajları (Faz 7). Ses butonları arayüzde çalışıyor ama basit `Audio.play()` ile, tam AudioManager değil.
+**Henüz yok (kasıtlı, sonraki fazlara bırakıldı):** rozet sistemi, rastgele doğru/yanlış/geçiş mesajları ve bunların sesleri (Faz 7).
+
+## AudioManager
+
+Tüm ses oynatma `assets/js/audio-manager.js` üzerinden geçer (`window.AudioManager` — tek giriş noktası, Howler.js sarmalayıcısı); uygulamada hiçbir yerde doğrudan `new Howl()` çağrılmaz.
+
+- **Play / Stop / Pause / Resume / Replay**, **Queue** (düşük öncelikli istekler mevcut ses bitene kadar bekler, otomatik sıradaki çalar), **Preload/Cache** (aynı ses tekrar istenirse yeniden indirilmez), **Fade In/Out**, **Volume**, **Mute/Unmute**, **Öncelik (priority)** — kategoriye göre varsayılan, istek bazında override edilebilir.
+- Aynı anda yalnızca bir "ana" ses çalar (kart/soru/seçenek/doğru/yanlış/geçiş/rozet kategorileri bu kanalı paylaşır); arayüz sesleri (`ui` kategorisi) ayrı kanalda, ana sesi etkilemez.
+- Aynı sesin üst üste binmesi engellenir; eşit veya yüksek öncelikli yeni istek mevcut sesi 180ms fade-out ile keser, düşük öncelikli istek sıraya alınır.
+- `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/transition/badge kategorileri AudioManager'da hazır ama henüz gerçek ses dosyası yok (Faz 7/8'de admin panelden yüklenecek).
 
 ## Sağlık Kontrolü
 

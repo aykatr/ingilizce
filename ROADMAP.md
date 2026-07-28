@@ -15,8 +15,8 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | 3 | Lisans Sistemi | ✅ Tamamlandı (genişletilmiş kapsam) |
 | 4 | Soru Modülü (Seçenek Sistemi dahil) | ✅ Tamamlandı |
 | 5 | Oyun Motoru | ✅ Tamamlandı |
-| 6 | Ses Sistemi | ⏳ Onay bekleniyor |
-| 7 | Puan ve Rozet Sistemi | ⏳ Bekliyor |
+| 6 | Ses Sistemi | ✅ Tamamlandı |
+| 7 | Puan ve Rozet Sistemi | ⏳ Onay bekleniyor |
 | 8 | Medya ve Ayarlar | ⏳ Bekliyor |
 | 9 | Optimizasyon | ⏳ Bekliyor |
 | 10 | Çoklu Dil Altyapısı | ⏳ Bekliyor |
@@ -106,15 +106,24 @@ Referans tasarıma (kullanıcı tarafından sağlanan giriş/kart ekranı görse
 
 **Playwright doğrulaması (kullanıcı talebiyle, ikinci tur):** Node + Chromium ile 58 otomatik kontrol — başlangıç ekranı öğeleri, 3 viewport'ta (mobil/tablet/masaüstü) responsive/overflow kontrolü, tüm butonlar (mute, info, başla, önceki/sonraki, restart, ses butonları), Başla→ilk soru, süre sayacı geri sayımı, son-5-saniye `is-low` pulse animasyonu, doğru/yanlış cevap akışları, can sistemi, önceki/sonraki inceleme modu, sonuç ekranı (normal bitiş + Game Over), placeholder/gerçek görsel render, admin başlangıç ekranı ayarlarının anlık yansıması, konsol hataları ve network 404/500 taraması. **58/58 geçti, 0 konsol hatası, 0 network hatası.** İlk turda 2 sorun bulundu ve düzeltildi: (1) gerçek uygulama hatası — kısa süreli sorularda `is-low` sınıfı ilk saniye tick'ine kadar gecikiyordu (`startTimer()` artık başlangıç anında da kontrol ediyor); (2) test script'inde `button[type="submit"]` seçicisi admin layout'taki "Çıkış Yap" butonuyla çakışıyordu (rol-tabanlı seçiciyle düzeltildi, uygulama kodu etkilenmedi).
 
-## Faz 6 — Ses Sistemi
+## Faz 6 — Ses Sistemi ✅
 
-- [ ] Howler.js entegrasyonu, AudioManager
-- [ ] Queue
-- [ ] Preload
-- [ ] Cache
-- [ ] Fade In / Fade Out
-- [ ] Mute / Volume
-- [ ] Ses öncelikleri (priority)
+Kapsam kullanıcı tarafından net çizildi: **yalnızca profesyonel bir AudioManager** geliştirildi (oyun ekranı/UI değişikliği yok). Howler.js üzerine kurulu, uygulamada hiçbir yerde doğrudan `new Howl()` çağrılmıyor — tek giriş noktası `App\Core` değil, istemci tarafı `window.AudioManager` singleton'ı.
+
+- [x] Howler.js entegrasyonu, `AudioManager` sınıfı (`assets/js/audio-manager.js`)
+- [x] Play / Stop / Pause / Resume / Replay
+- [x] Queue — düşük öncelikli istekler mevcut ses bitene kadar sıraya alınır, bitince otomatik oynar
+- [x] Preload / Cache — `Map<url, Howl>` ile aynı ses tekrar istenirse yeniden indirilmez
+- [x] Fade In / Fade Out — öncelik kesintisinde 180ms fade-out, `fadeIn` opsiyonuyla yumuşak giriş
+- [x] Volume / Mute / Unmute — `Howler.volume()/mute()` üzerinden global
+- [x] Ses önceliği (priority) — kategori bazlı varsayılan öncelikler + istek bazında override; eşit veya yüksek öncelik anında keser, düşük öncelik sıraya alınır
+- [x] Aynı sesin üst üste binmesini engelleme — aynı url zaten çalıyorsa yeni `play()` isteği yok sayılır (cache + tek-slot mantığı)
+- [x] Mobil uyumluluk — Howler'ın kendi unlock mekanizması + `prime()` ile "Başla" tıklamasında audio context erken açılıyor
+- [x] 8 ses kategorisi tanımlı: card, question, option, correct, wrong, transition, badge, ui (correct/wrong/transition/badge için henüz gerçek ses dosyası yok — Faz 7/8'de admin panelden yüklenecek, AudioManager onlara hazır)
+- [x] GameEngine minimum entegrasyonu — `playCardAudio()/playQuestionAudio()/playOptionAudio()` + soru değiştiğinde otomatik `preload()`; GameEngine yalnızca AudioManager API'sini çağırıyor, kendi Howl nesnesi oluşturmuyor
+- [x] Ses dosyası yolları DB'den geliyor — kod içinde sabit yol yok (mevcut entegrasyon noktaları: kart/soru/seçenek sesi, hepsi `questions`/`question_options` tablolarından)
+
+**Teslim:** Playwright ile 26 otomatik kontrol (play/pause/resume/stop/replay, preload/cache, öncelik kesintisi, queue+otomatik sıradaki, UI kanalı bağımsızlığı, mute/volume, "doğrudan Howl yok" statik kontrolü, GameEngine buton entegrasyonu, otomatik preload, mute butonunun gerçekten Howler'ı susturması) — **26/26 geçti, 0 konsol hatası**. Faz 5 regresyon paketi (58 kontrol) da tekrar çalıştırıldı, hâlâ temiz. Test sırasında bulunan tek gerçek tasarım sorunu düzeltildi: eşit öncelikli farklı bir ses istendiğinde (ör. kullanıcı başka bir hoparlör butonuna tıklaması) artık sıraya alınmak yerine hemen çalıyor (`priority >= current` kesme kuralı) — sıraya alma yalnızca gerçekten düşük öncelikli istekler için geçerli.
 
 ## Faz 7 — Puan ve Rozet Sistemi
 

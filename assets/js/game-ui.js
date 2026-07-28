@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-    const engine = new GameEngine({ csrfToken });
+    const audio = window.AudioManager;
+    const engine = new GameEngine({ csrfToken, audioManager: audio });
 
     const screens = {
         start: document.getElementById('screen-start'),
@@ -8,9 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
         result: document.getElementById('screen-result'),
     };
 
-    let muted = localStorage.getItem('yippee_muted') === '1';
     let timerInterval = null;
     let timeLeft = 0;
+
+    if (localStorage.getItem('yippee_muted') === '1') {
+        audio.mute();
+    }
 
     updateMuteIcons();
 
@@ -23,22 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function playAudio(url) {
-        if (!url || muted) {
-            return;
-        }
-
-        new Audio(url).play().catch(() => {});
-    }
-
     function updateMuteIcons() {
-        const icon = muted ? '🔇' : '🔊';
+        const icon = audio.isMuted() ? '🔇' : '🔊';
         document.getElementById('btn-mute-start').textContent = icon;
         document.getElementById('btn-mute-game').textContent = icon;
     }
 
     function toggleMute() {
-        muted = !muted;
+        const muted = audio.toggleMute();
         localStorage.setItem('yippee_muted', muted ? '1' : '0');
         updateMuteIcons();
     }
@@ -60,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-start-game').addEventListener('click', async () => {
         const btn = document.getElementById('btn-start-game');
         btn.disabled = true;
+        audio.prime();
 
         try {
             await engine.start();
@@ -90,24 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-question-audio').addEventListener('click', () => {
-        const view = engine.getDisplayedQuestion();
-
-        if (view.question) {
-            playAudio(view.question.questionAudio);
-        }
+        engine.playQuestionAudio();
     });
 
     document.querySelectorAll('.option-audio-btn').forEach((btn) => {
         btn.addEventListener('click', (event) => {
             event.stopPropagation();
-
-            const position = btn.dataset.audioPosition;
-            const view = engine.getDisplayedQuestion();
-            const option = view.question?.options.find((o) => o.position === position);
-
-            if (option) {
-                playAudio(option.audio);
-            }
+            engine.playOptionAudio(btn.dataset.audioPosition);
         });
     });
 

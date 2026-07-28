@@ -145,6 +145,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+    <script src="<?= asset('js/audio-manager.js') ?>"></script>
     <script src="<?= asset('js/game-engine.js') ?>"></script>
     <script src="<?= asset('js/game-ui.js') ?>"></script>
 </body>

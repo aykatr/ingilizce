@@ -2,6 +2,24 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.7.0] - 2026-07-28
+
+Faz 6 — Ses Sistemi. Kapsam kullanıcı tarafından net çizildi: yalnızca profesyonel bir `AudioManager` geliştirildi, oyun ekranı/UI değişmedi.
+
+### Eklendi
+
+- `assets/js/audio-manager.js` — Howler.js üzerine kurulu `AudioManager` sınıfı, `window.AudioManager` singleton'ı olarak tek giriş noktası. Uygulamada hiçbir yerde doğrudan `new Howl()` yok.
+- Play/Stop/Pause/Resume/Replay, Queue (öncelik sıralı, otomatik sıradaki), Preload/Cache (`Map<url,Howl>`), Fade In/Out (180ms kesme fade'i), Volume, Mute/Unmute, öncelik (priority) sistemi, aynı sesin üst üste binmesini engelleme, mobil unlock (`prime()`)
+- 8 ses kategorisi: card, question, option, correct, wrong, transition, badge, ui — "main" kanalı (aynı anda tek ses) ve bağımsız "ui" kanalı
+- `GameEngine` minimum entegrasyonu: `playCardAudio()/playQuestionAudio()/playOptionAudio()` + soru değiştiğinde otomatik preload; ses dosyası yolları tamamen DB'den (`questions`/`question_options`) geliyor, kod içinde sabit yol yok
+- `game-ui.js`'deki mute butonları artık gerçekten `AudioManager.mute()/unmute()`'a bağlı (önceden yalnızca ikon değiştiren yerel bir bayraktı)
+
+### Test
+
+Playwright ile 26 otomatik kontrol (standalone AudioManager davranışları + GameEngine buton entegrasyonu) — 26/26 geçti, 0 konsol hatası. Faz 5 regresyon paketi (58 kontrol) tekrar çalıştırıldı, hâlâ temiz.
+
+**Bulunan ve düzeltilen tasarım sorunu:** eşit öncelikli farklı bir ses istendiğinde (ör. kullanıcı başka bir hoparlör butonuna tıklaması) sessizce sıraya alınıyordu; artık hemen çalıyor (`priority >= current` kesme kuralı — sıraya alma yalnızca gerçekten düşük öncelikli istekler için).
+
 ## [0.6.1] - 2026-07-28
 
 Faz 5 kapanışı öncesi Playwright ile kapsamlı görsel/fonksiyonel doğrulama (kullanıcı talebiyle). 58 otomatik kontrol — 0 konsol hatası, 0 network hatası.
