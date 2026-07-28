@@ -110,6 +110,22 @@ class QuestionService
         return $this->find($id);
     }
 
+    /**
+     * Kart Seçim Menüsü admin ekranından toplu sıra/görünürlük güncellemesi.
+     * Mevcut "Sıra" (sort_order) ve "Aktif" (is_active) alanlarını kullanır — yeni bir alan eklemez.
+     *
+     * @param array<int|string, array{sort_order?: mixed, is_active?: mixed}> $rows
+     */
+    public function updateOrder(array $rows): void
+    {
+        foreach ($rows as $id => $row) {
+            $this->questions->update($id, [
+                'sort_order' => (int) ($row['sort_order'] ?? 0),
+                'is_active' => !empty($row['is_active']) ? 1 : 0,
+            ]);
+        }
+    }
+
     public function delete(int|string $id): void
     {
         $question = $this->find($id);

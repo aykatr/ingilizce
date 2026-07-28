@@ -19,6 +19,7 @@
                 <a href="<?= base_url('admin/badges') ?>" class="nav-link d-inline">Rozetler</a>
                 <a href="<?= base_url('admin/transition-messages') ?>" class="nav-link d-inline">Geçiş Mesajları</a>
                 <a href="<?= base_url('admin/licenses') ?>" class="nav-link d-inline">Lisanslar</a>
+                <a href="<?= base_url('admin/settings/menu') ?>" class="nav-link d-inline">Menü Yönetimi</a>
                 <a href="<?= base_url('admin/media-library') ?>" class="nav-link d-inline">Medya Kütüphanesi</a>
                 <a href="<?= base_url('admin/settings') ?>" class="nav-link d-inline">Site Ayarları</a>
                 <a href="<?= base_url('admin/audit-log') ?>" class="nav-link d-inline">Denetim Kaydı</a>

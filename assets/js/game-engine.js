@@ -18,6 +18,8 @@ class GameEngine extends EventTarget {
         this.finished = false;
         this.gameOver = false;
         this.badges = [];
+        this.lastQuestionId = null;
+        this.menuProgress = null;
     }
 
     async #post(url, body = {}) {
@@ -36,15 +38,17 @@ class GameEngine extends EventTarget {
         return data;
     }
 
-    async start() {
+    /** Kart Seçim Menüsü'nden seçilen kartın ID'si dışında bir şey almaz/bilmez. */
+    async start(questionId) {
         this.score = 0;
         this.history = [];
         this.viewIndex = null;
         this.finished = false;
         this.gameOver = false;
         this.badges = [];
+        this.lastQuestionId = questionId;
 
-        const data = await this.#post('/play/api/start');
+        const data = await this.#post('/play/api/start', { question_id: questionId });
         this.#applyPayload(data);
         this.dispatchEvent(new CustomEvent('question'));
 
@@ -58,6 +62,7 @@ class GameEngine extends EventTarget {
         this.lives = data.lives;
         this.maxLives = data.maxLives;
         this.total = data.total;
+        this.menuProgress = data.menuProgress || this.menuProgress;
 
         if (!this.finished) {
             this.index = data.index;
@@ -183,6 +188,8 @@ class GameEngine extends EventTarget {
     }
 
     #handleAnswerResult(data, position) {
+        this.menuProgress = data.menuProgress || this.menuProgress;
+
         if (Array.isArray(data.earnedBadges) && data.earnedBadges.length > 0) {
             this.badges.push(...data.earnedBadges);
         }

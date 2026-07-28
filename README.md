@@ -112,6 +112,9 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/transition-messages/{id}/edit` | Geçiş mesajı düzenleme formu (giriş gerektirir) |
 | `POST /admin/transition-messages/{id}` | Geçiş mesajı güncelle (giriş gerektirir) |
 | `POST /admin/transition-messages/{id}/delete` | Geçiş mesajı sil (giriş gerektirir) |
+| `GET /admin/settings/menu` | Menü Yönetimi (Kart Seçim Menüsü ayarları) (giriş gerektirir) |
+| `POST /admin/settings/menu` | Menü genel+görünüm ayarlarını güncelle (giriş gerektirir) |
+| `POST /admin/settings/menu/cards` | Kartların menü sırasını/görünürlüğünü toplu güncelle (giriş gerektirir) |
 | `GET /admin/media-library` | Medya kütüphanesi listesi (giriş gerektirir) |
 | `GET /admin/media-library/api/list` | Medya listesi (JSON, "Kütüphaneden Seç" widget'ı için — giriş gerektirir) |
 | `POST /admin/media-library/upload` | Toplu dosya yükleme (giriş gerektirir) |
@@ -127,8 +130,8 @@ Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden
 
 | Route | Açıklama |
 |---|---|
-| `POST /play/api/start` | Oyun oturumunu başlatır/sıfırlar, ilk soruyu döndürür |
-| `POST /play/api/answer` | Seçilen şıkkı gönderir (`position=A\|B\|C\|D`), sonucu ve (doğruysa) sıradaki soruyu döndürür |
+| `POST /play/api/start` | Kart Seçim Menüsü'nden seçilen kartın (`question_id`) oturumunu başlatır/sıfırlar |
+| `POST /play/api/answer` | Seçilen şıkkı gönderir (`position=A\|B\|C\|D`), sonucu döndürür |
 | `POST /play/api/timeout` | Süre dolduğunda çağrılır, yanlış cevap gibi işlenir |
 
 Bu uçlar yalnızca `play.php?t=...` üzerinden geçerli bir lisansla girildiyse çalışır (session flag), ve CSRF token gerektirir.
@@ -149,24 +152,32 @@ Soru oluşturma/düzenleme tek sayfada, sekmeler halinde yapılır: Genel Bilgil
 
 ## Oyun Motoru
 
-Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → tüm aktif sorular sıraya konur → **Başlangıç Ekranı** (yalnızca ilk girişte, "Başla" butonuyla) → sorular tek tek (her geçişte sunucudan) yüklenir → **Sonuç Ekranı**.
+Oyun akışı: QR → `play.php?t=TOKEN` → lisans doğrulanır → **Başlangıç Ekranı** ("Başla" butonuyla) → **Kart Seçim Menüsü** → çocuk bir kart seçer → o kartın (sorunun) oturumu başlar → kart tamamlanır → otomatik olarak Kart Seçim Menüsü'ne dönülür. "Ana Menü" (🏠) butonu oyun ekranında her zaman menüye döner.
 
-- Sunucu tarafı oyun durumu (`App\Services\GameSessionService`) PHP session'da tutulur: soru sırası, mevcut index, skor, can, o anki soruda denenmiş şıklar. Doğru cevap sunucuda doğrulanır, istemciye asla sızdırılmaz.
-- İstemci tarafı `GameEngine` sınıfı (`assets/js/game-engine.js`) saf mantık — DOM'a dokunmaz, ses için yalnızca `AudioManager` API'sini çağırır. `assets/js/game-ui.js` DOM/GSAP render katmanı.
+- Sunucu tarafı oyun durumu (`App\Services\GameSessionService`) PHP session'da tutulur: seçilen kartın verisi, o anki soruda denenmiş şıklar, kart-bazlı can. Doğru cevap sunucuda doğrulanır, istemciye asla sızdırılmaz.
+- İstemci tarafı `GameEngine` sınıfı (`assets/js/game-engine.js`) saf mantık — DOM'a dokunmaz, ses için yalnızca `AudioManager` API'sini çağırır, sunucudan yalnızca seçilen kartın ID'sini geçirir. `assets/js/game-ui.js` DOM/GSAP render katmanı.
 - **Süre**: geriye sayar, son 5 saniyede kırmızıya döner + nabız animasyonu; süre dolarsa yanlış cevap sayılır.
-- **Can**: varsayılan 3 (Site Ayarları'ndan değiştirilebilir), yanlış cevapta azalır, 0 olunca oyun biter. Can, tüm oyun boyunca paylaşılır (soru başına sıfırlanmaz).
-- **Doğru cevap**: buton yeşil, diğerleri pasif, +puan animasyonu, otomatik geçiş.
+- **Can**: varsayılan 3 (Site Ayarları'ndan değiştirilebilir), yanlış cevapta azalır, 0 olunca o kart için oyun biter. Can **kart-bazlı bağımsızdır** — her kart seçiminde sıfırdan başlar, bir karttaki can bitmesi diğer kartları etkilemez, aynı kart tekrar seçilebilir.
+- **Doğru cevap**: buton yeşil, diğerleri pasif, +puan animasyonu, ardından otomatik olarak Kart Seçim Menüsü'ne dönüş.
 - **Yanlış cevap**: buton kırmızı ve devre dışı kalır, doğru cevap hemen gösterilmez — kalan şıklarla tekrar denenebilir.
-- **Önceki/Sonraki**: Önceki yalnızca tamamlanmış sorularda çalışır (istemci tarafında önbelleklenmiş, salt-okunur inceleme); Sonraki yalnızca inceleme modundayken aktiftir.
 - **Başlangıç ekranı içeriği** (arka plan, logo, maskot görselleri, başlık/açıklama/buton metni) tamamen admin panelden yönetilir (`/admin/settings/start-screen`); kod içinde sabit görsel/metin yoktur. Yüklenmemiş görseller sayfa bozulmadan gizlenir.
+- Eski "tüm soruları tek oturumda sırayla oynatma" modeli ve buna bağlı Önceki/Sonraki inceleme + Sonuç Ekranı akışı Kart Seçim Menüsü ile kaldırıldı; ilgili kod (`#screen-result`, `renderResult()`) silinmedi, sadece artık bu akış tarafından tetiklenmiyor (bkz. aşağıki bölüm).
+
+## Kart Seçim Menüsü
+
+Fiziksel kartların dijital karşılığı olan bir seçim ekranı: aktif sorular (`/admin/settings/menu`'deki "Sıra" alanına göre sıralanır) kart görseliyle (mevcut "Kart Görseli", ayrıca yönetilmez) listelenir; tamamlanan kartlar ✓ işaretiyle gösterilir. Üstte ziyaret boyunca kalıcı **Toplam Puan**, **Tamamlanan Kart Sayısı** ve **Toplam Rozet** istatistikleri gösterilir (`App\Services\MenuProgressService`, kartlar arası korunur — sayfa yenilense/menüye dönülse de sıfırlanmaz).
+
+`/admin/settings/menu` (Menü Yönetimi) üç bölüm sunar: **Genel** (menü başlığı/açıklaması/arka plan görseli), **Görünüm** (kolon sayısı, kart boyutu, kartlar arası boşluk, kart köşe yuvarlaklığı — CSS custom property'lerle uygulanır), **Kartlar** (mevcut "Sıra" ve "Aktif" — burada "Menüde Göster" olarak — alanlarını toplu düzenleyen bir tablo). Yeni bir veritabanı tablosu/kolonu eklenmedi; tüm ayarlar mevcut `settings` tablosu ve `questions.sort_order`/`questions.is_active` üzerinden yönetiliyor.
+
+Can her kart için bağımsız olduğundan, rozet koşullarındaki "N doğru cevap" / "belirli puana ulaşma" gibi çok-adımlı koşullar artık kart-bazlı değil ziyaret-bazlı (yukarıdaki `MenuProgressService`) değerlendirilir — aksi halde tek soruluk bir kart oturumunda hiçbir zaman sağlanamazlardı.
 
 ## Puan, Başarı Mesajları, Rozetler ve Geçiş Mesajları
 
 Dört bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif), **Geçiş Mesajları** (`/admin/transition-messages` — başlık+ses+animasyon tipi+aktif/pasif, tek grup; her doğru cevapta sıradaki bir soru varsa aktif bir mesaj rastgele seçilir, `AudioManager`'ın `transition` kategorisiyle çalınır).
 
-Rozet koşulları kod içine sabit yazılmaz: her rozet bir `condition_type` (+ opsiyonel `condition_value`) taşır, `App\Services\BadgeService` bunu genişletilebilir bir closure haritasıyla değerlendirir. Hazır koşullar: ilk doğru cevap, belirli sayıda doğru cevap, hatasız tamamlama, süre dolmadan tamamlama, belirli puana ulaşma — yenileri kolayca eklenebilir. Değerlendirme tamamen sunucu tarafında (`GameSessionService`); istemci yalnızca hangi rozetlerin kazanıldığı bilgisini alır ve gösterir. Aynı rozet aynı oyun oturumunda ikinci kez verilmez.
+Rozet koşulları kod içine sabit yazılmaz: her rozet bir `condition_type` (+ opsiyonel `condition_value`) taşır, `App\Services\BadgeService` bunu genişletilebilir bir closure haritasıyla değerlendirir. Hazır koşullar: ilk doğru cevap, belirli sayıda doğru cevap, hatasız tamamlama, süre dolmadan tamamlama, belirli puana ulaşma — yenileri kolayca eklenebilir. Değerlendirme tamamen sunucu tarafında (`GameSessionService`); istemci yalnızca hangi rozetlerin kazanıldığı bilgisini alır ve gösterir. Aynı rozet aynı ziyaret boyunca (Kart Seçim Menüsü'nden oynanan tüm kartlar arasında) ikinci kez verilmez; "belirli sayıda doğru cevap"/"belirli puana ulaşma" gibi koşullar da tek bir kartla değil, ziyaret boyunca biriken toplamla değerlendirilir.
 
-Kazanılan rozetler oyun sırasında altın renkli bir bildirimle (görsel+ses+animasyon) gösterilir, oturum sonunda sonuç ekranında özetlenir. Geçiş mesajı ise mor renkli bir toast olarak, doğru cevap bildiriminden kısa bir süre sonra gösterilir; son soru cevaplandığında (geçilecek sıradaki soru olmadığı için) hiç gösterilmez.
+Kazanılan rozetler oyun sırasında altın renkli bir bildirimle (görsel+ses+animasyon) gösterilir. **Geçiş Mesajları modülü Kart Seçim Menüsü'nden sonra fiilen devre dışıdır**: her kart oturumu artık tam olarak bir soru içerdiği için "sıradaki soru" hiçbir zaman olmuyor ve geçiş mesajı tetiklenmiyor — modül (admin CRUD dahil) kasıtlı olarak silinmedi, ileride farklı bir oyun modunda yeniden anlamlı olabilir.
 
 ## AudioManager
 

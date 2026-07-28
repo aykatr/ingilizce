@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const screens = {
         start: document.getElementById('screen-start'),
+        menu: document.getElementById('screen-menu'),
         game: document.getElementById('screen-game'),
         result: document.getElementById('screen-result'),
     };
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateMuteIcons() {
         const icon = audio.isMuted() ? '🔇' : '🔊';
         document.getElementById('btn-mute-start').textContent = icon;
+        document.getElementById('btn-mute-menu').textContent = icon;
         document.getElementById('btn-mute-game').textContent = icon;
     }
 
@@ -56,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('btn-mute-start').addEventListener('click', toggleMute);
+    document.getElementById('btn-mute-menu').addEventListener('click', toggleMute);
     document.getElementById('btn-mute-game').addEventListener('click', toggleMute);
 
     document.getElementById('btn-info').addEventListener('click', () => {
@@ -63,34 +66,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-home').addEventListener('click', () => {
-        if (confirm('Ana sayfaya dönmek istiyor musun? Mevcut ilerleme kaybolacak.')) {
+        if (confirm('Kart Seçim Menüsü\'ne dönmek istiyor musun? Bu karttaki ilerleme kaybolacak.')) {
             stopTimer();
-            showScreen('start');
+            returnToMenu();
         }
     });
 
-    document.getElementById('btn-start-game').addEventListener('click', async () => {
-        const btn = document.getElementById('btn-start-game');
-        btn.disabled = true;
+    document.getElementById('btn-start-game').addEventListener('click', () => {
         audio.prime();
-
-        try {
-            await engine.start();
-            showScreen('game');
-        } catch (error) {
-            alert(error.message);
-        } finally {
-            btn.disabled = false;
-        }
+        showScreen('menu');
     });
 
-    document.getElementById('btn-restart').addEventListener('click', async () => {
-        try {
-            await engine.start();
-            showScreen('game');
-        } catch (error) {
-            alert(error.message);
-        }
+    document.querySelectorAll('.menu-card').forEach((card) => {
+        card.addEventListener('click', async () => {
+            card.disabled = true;
+
+            try {
+                await engine.start(Number(card.dataset.questionId));
+                showScreen('game');
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                card.disabled = false;
+            }
+        });
+    });
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+        returnToMenu();
     });
 
     document.getElementById('btn-prev').addEventListener('click', () => {
@@ -195,18 +198,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.correct) {
             setTimeout(() => {
                 if (engine.finished) {
-                    renderResult();
-                    showScreen('result');
+                    returnToMenu();
                 } else {
                     renderQuestion();
                 }
             }, 1200);
         } else if (result.gameOver) {
             setTimeout(() => {
-                renderResult();
-                showScreen('result');
+                returnToMenu();
             }, 1200);
         }
+    }
+
+    /** Kart tamamlanınca (veya "Ana Menü" ile terk edilince) Kart Seçim Menüsü'ne döner. */
+    function returnToMenu() {
+        stopTimer();
+
+        if (engine.menuProgress) {
+            document.getElementById('menu-total-score').textContent = engine.menuProgress.totalScore;
+            document.getElementById('menu-completed-count').textContent = engine.menuProgress.completedCount;
+            document.getElementById('menu-total-badges').textContent = engine.menuProgress.totalBadges;
+        }
+
+        if (engine.finished && !engine.gameOver && engine.lastQuestionId) {
+            const card = document.querySelector('.menu-card[data-question-id="' + engine.lastQuestionId + '"]');
+            card?.classList.add('is-completed');
+        }
+
+        showScreen('menu');
     }
 
     function disableOtherOptions(exceptPosition) {

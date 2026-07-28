@@ -6,6 +6,8 @@ interface QuestionRepositoryInterface
 {
     public function allWithCategory(): array;
 
+    public function activeOrdered(): array;
+
     public function find(int|string $id): ?array;
 
     public function create(array $data): string;

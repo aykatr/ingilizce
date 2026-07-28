@@ -18,25 +18,27 @@ class GameSessionService
         private AchievementMessageService $messages,
         private BadgeService $badges,
         private TransitionMessageService $transitions,
+        private MenuProgressService $menuProgress,
     ) {
     }
 
-    public function start(): array
+    /**
+     * Kart Seçim Menüsü'nden seçilen tek bir kartın (sorunun) oturumunu başlatır.
+     * Can her kart için bağımsızdır (sıfırdan başlar); skor/rozet dedup ise
+     * MenuProgressService üzerinden ziyaret boyunca kartlar arası kalıcıdır.
+     */
+    public function start(int $questionId): array
     {
-        $active = array_values(array_filter(
-            $this->questions->allWithCategory(),
-            fn (array $q) => (int) $q['is_active'] === 1
-        ));
+        $question = $this->questions->find($questionId);
 
-        usort($active, function (array $a, array $b) {
-            return $a['sort_order'] <=> $b['sort_order'] ?: $a['id'] <=> $b['id'];
-        });
+        if (!$question || (int) $question['is_active'] !== 1) {
+            throw new ValidationException('Kart bulunamadı veya artık aktif değil.');
+        }
 
-        $ids = array_map(fn (array $q) => (int) $q['id'], $active);
         $lives = $this->settings->getDefaultLives();
 
         Session::put(self::SESSION_KEY, [
-            'question_ids' => $ids,
+            'question_ids' => [(int) $questionId],
             'index' => 0,
             'score' => 0,
             'lives' => $lives,
@@ -44,10 +46,11 @@ class GameSessionService
             'attempted' => [],
             'game_over' => false,
             'timeout_occurred' => false,
-            'awarded_badge_ids' => [],
         ]);
 
-        return $this->currentPayload();
+        return array_merge($this->currentPayload(), [
+            'menuProgress' => $this->menuProgress->snapshot(),
+        ]);
     }
 
     public function answer(?string $position, bool $isTimeout = false): array
@@ -91,6 +94,13 @@ class GameSessionService
             $state['attempted'] = [];
 
             $isFinished = $state['index'] >= $total;
+
+            if ($isFinished) {
+                $this->menuProgress->recordCompletion($questionId, $points);
+            }
+
+            // recordCompletion() az önce çağrıldı — rozet bağlamındaki correctCount/score artık
+            // bu kartın tamamlanmasını da içeren ziyaret-boyu (kartlar arası kalıcı) toplamı yansıtır.
             $earnedBadges = $this->evaluateBadges($state, $isFinished);
 
             Session::put(self::SESSION_KEY, $state);
@@ -106,6 +116,7 @@ class GameSessionService
                 'message' => $this->formatMessage($this->messages->pickRandom(AchievementMessageService::TYPE_CORRECT)),
                 'transitionMessage' => $isFinished ? null : $this->formatMessage($this->transitions->pickRandom()),
                 'earnedBadges' => array_map($this->formatBadge(...), $earnedBadges),
+                'menuProgress' => $this->menuProgress->snapshot(),
                 'next' => $this->currentPayload(),
             ];
         }
@@ -134,16 +145,27 @@ class GameSessionService
             'gameOver' => $state['game_over'],
             'message' => $this->formatMessage($this->messages->pickRandom(AchievementMessageService::TYPE_WRONG)),
             'earnedBadges' => array_map($this->formatBadge(...), $earnedBadges),
+            'menuProgress' => $this->menuProgress->snapshot(),
             'next' => null,
         ];
     }
 
-    /** @return array newly earned badge rows (raw, unformatted) */
+    /**
+     * @return array newly earned badge rows (raw, unformatted)
+     *
+     * correctCount/score kasıtlı olarak MenuProgressService'ten (ziyaret boyunca kartlar arası
+     * kalıcı) okunur, $state'in kart-bazlı sayaçlarından değil — aksi halde "N doğru cevap"/"X
+     * puana ulaşma" gibi koşullar tek soruluk kart oturumunda asla sağlanamazdı (bkz. Kart Seçim
+     * Menüsü revizyonu). lives/maxLives/timeoutOccurred bilinçli olarak kart-bazlı kalır: "hatasız
+     * tamamlama" artık "bu kartı ilk denemede bitirme" anlamına gelir.
+     */
     private function evaluateBadges(array &$state, bool $isFinished): array
     {
+        $progress = $this->menuProgress->snapshot();
+
         $context = [
-            'correctCount' => $state['index'],
-            'score' => $state['score'],
+            'correctCount' => $progress['completedCount'],
+            'score' => $progress['totalScore'],
             'lives' => max(0, $state['lives']),
             'maxLives' => $state['max_lives'],
             'timeoutOccurred' => $state['timeout_occurred'],
@@ -151,10 +173,10 @@ class GameSessionService
             'gameOver' => $state['game_over'],
         ];
 
-        $earned = $this->badges->evaluateNewlyEarned($context, $state['awarded_badge_ids']);
+        $earned = $this->badges->evaluateNewlyEarned($context, $this->menuProgress->alreadyAwardedBadgeIds());
 
         foreach ($earned as $badge) {
-            $state['awarded_badge_ids'][] = (int) $badge['id'];
+            $this->menuProgress->recordBadgeAwarded((int) $badge['id']);
         }
 
         return $earned;

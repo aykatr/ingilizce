@@ -18,6 +18,17 @@ class QuestionRepository implements QuestionRepositoryInterface
         return Database::connection()->query($sql)->fetchAll();
     }
 
+    public function activeOrdered(): array
+    {
+        $sql = 'SELECT q.*, c.name AS category_name
+                FROM questions q
+                INNER JOIN categories c ON c.id = q.category_id
+                WHERE q.is_active = 1
+                ORDER BY q.sort_order ASC, q.id ASC';
+
+        return Database::connection()->query($sql)->fetchAll();
+    }
+
     public function find(int|string $id): ?array
     {
         return Question::find($id);

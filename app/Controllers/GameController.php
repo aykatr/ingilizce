@@ -15,6 +15,7 @@ use App\Services\BadgeService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\GameSessionService;
 use App\Services\MediaUploadService;
+use App\Services\MenuProgressService;
 use App\Services\SettingService;
 use App\Services\TransitionMessageService;
 
@@ -32,7 +33,8 @@ class GameController extends BaseController
             new SettingService(new SettingRepository()),
             new AchievementMessageService(new AchievementMessageRepository(), $media),
             new BadgeService(new BadgeRepository(), $media),
-            new TransitionMessageService(new TransitionMessageRepository(), $media)
+            new TransitionMessageService(new TransitionMessageRepository(), $media),
+            new MenuProgressService()
         );
     }
 
@@ -41,7 +43,14 @@ class GameController extends BaseController
         $this->guardAuthorized();
         $this->guardCsrf();
 
-        $this->json($this->gameService->start());
+        $request = new Request();
+        $questionId = (int) $request->input('question_id');
+
+        try {
+            $this->json($this->gameService->start($questionId));
+        } catch (ValidationException $e) {
+            $this->json(['error' => $e->getMessage()], 422);
+        }
     }
 
     public function answer(): void

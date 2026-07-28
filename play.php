@@ -12,6 +12,8 @@ use App\Repositories\SettingRepository;
 use App\Services\Exceptions\ValidationException;
 use App\Services\LicenseService;
 use App\Services\MediaUploadService;
+use App\Services\MenuProgressService;
+use App\Services\MenuSettingsService;
 use App\Services\StartScreenService;
 
 Env::load(__DIR__ . '/.env');
@@ -44,16 +46,18 @@ Session::put('play_authorized', true);
 
 $media = new MediaUploadService(config('app.uploads_path'));
 $startScreenService = new StartScreenService(new SettingRepository(), $media);
+$menuSettingsService = new MenuSettingsService(new SettingRepository(), $media);
+$menuProgressService = new MenuProgressService();
 
 $questionRepository = new QuestionRepository();
-$totalQuestions = count(array_filter(
-    $questionRepository->allWithCategory(),
-    fn (array $q) => (int) $q['is_active'] === 1
-));
+$menuCards = $questionRepository->activeOrdered();
 
 echo View::render('play.index', [
     'license' => $license,
     'startScreen' => $startScreenService->get(),
+    'menuSettings' => $menuSettingsService->get(),
+    'menuCards' => $menuCards,
+    'menuProgress' => $menuProgressService->snapshot(),
     'csrfToken' => Session::csrfToken(),
-    'totalQuestions' => $totalQuestions,
+    'totalQuestions' => count($menuCards),
 ], null);

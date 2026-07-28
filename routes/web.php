@@ -9,6 +9,7 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\LicenseController;
 use App\Controllers\Admin\MediaLibraryController;
+use App\Controllers\Admin\MenuSettingsController;
 use App\Controllers\Admin\PasswordController;
 use App\Controllers\Admin\QuestionController;
 use App\Controllers\Admin\SettingController;
@@ -41,6 +42,9 @@ $router->get('/admin/settings', [SettingController::class, 'edit']);
 $router->post('/admin/settings', [SettingController::class, 'update']);
 $router->get('/admin/settings/start-screen', [StartScreenController::class, 'edit']);
 $router->post('/admin/settings/start-screen', [StartScreenController::class, 'update']);
+$router->get('/admin/settings/menu', [MenuSettingsController::class, 'edit']);
+$router->post('/admin/settings/menu', [MenuSettingsController::class, 'update']);
+$router->post('/admin/settings/menu/cards', [MenuSettingsController::class, 'updateCards']);
 
 $router->get('/admin/categories', [CategoryController::class, 'index']);
 $router->get('/admin/categories/create', [CategoryController::class, 'create']);

@@ -2,6 +2,31 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.10.0] - 2026-07-28
+
+Faz 9'dan önce istenen oyun akışı revizyonu: Kart Seçim Menüsü. Kart=Soru mimarisi, veritabanı şeması ve GameEngine'in temel mekanikleri değişmedi; DB şemasına hiçbir tablo/kolon eklenmedi.
+
+### Eklendi
+
+- **Kart Seçim Menüsü** (`#screen-menu`) — Başlangıç Ekranı'ndan sonra açılır, aktif kartları (mevcut "Kart Görseli"+"Sıra") listeler; tamamlanan kartlar ✓ ile işaretlenir, üstte ziyaret boyunca kalıcı Toplam Puan/Tamamlanan Kart Sayısı/Toplam Rozet istatistikleri gösterilir.
+- Can artık **kart-bazlı bağımsız**: her kart seçimi canı sıfırdan başlatır; bir kartta can biterse yalnızca o kart için biter, diğer kartlar etkilenmez, aynı kart tekrar oynanabilir.
+- `App\Services\MenuProgressService` — ziyaret boyunca kartlar arası kalıcı toplam puan/tamamlanan-kart/verilmiş-rozet takibi (`$_SESSION['menu_progress']`, `GameSessionService`'in oturum durumundan ayrı).
+- `App\Services\MenuSettingsService` + `/admin/settings/menu` (Menü Yönetimi) — Genel (başlık/açıklama/arka plan görseli) ve Görünüm (kolon sayısı/kart boyutu/boşluk/köşe yuvarlaklığı) ayarları, mevcut `settings` tablosu üzerinden (`StartScreenService` ile aynı desen); ayrıca kartların mevcut "Sıra"/"Aktif" alanlarını toplu düzenleyen bir tablo (`QuestionService::updateOrder()`).
+- `GameSessionService::start(int $questionId)` — artık seçilen kartın ID'sini zorunlu parametre olarak alır, tek-elemanlı bir soru "kuyruğu" kurar; `GameEngine.start(questionId)` de aynı şekilde güncellendi.
+
+### Düzeltildi
+
+- Rozet değerlendirme bağlamındaki `correctCount`/`score` artık `MenuProgressService`'ten (ziyaret boyu) okunuyor — aksi halde "N doğru cevap"/"belirli puana ulaşma" gibi koşullar tek-soruluk kart oturumunda hiçbir zaman sağlanamazdı (bu revizyonun getirdiği bir yan etkiydi, test sırasında yakalanıp düzeltildi).
+
+### Bilinen yan etki (kaldırılmadı, bilinçli)
+
+- Geçiş Mesajları modülü artık fiilen tetiklenmiyor — her kart oturumu tam olarak bir soru içerdiği için "sıradaki soru" durumu hiç oluşmuyor. Kod/tablo/admin CRUD kullanıcı isteğiyle korundu, silinmedi.
+- `#screen-result` ve ilgili JS (`renderResult()`, `renderResultBadges()`) kullanıcı isteğiyle modüler olarak korundu; yeni akış tarafından hiç tetiklenmiyor.
+
+### Test
+
+Kart seçimi, kart-bazlı can bağımsızlığı, ziyaret-boyu skor/rozet/tamamlanan-kart birikimi, çapraz-kart rozet koşulları, can bitince/Ana Menü ile terk edilince tamamlanma sayılmaması curl ile uçtan uca doğrulandı. Admin Menü Yönetimi curl ve gerçek tarayıcı (Türkçe karakter) ile doğrulandı. Playwright ile 15 yeni kontrol (`test-card-menu.js`) — 15/15 geçti; AudioManager entegrasyon testi (26 kontrol) yeni akışa uyarlanarak tekrar çalıştırıldı, hâlâ temiz.
+
 ## [0.9.0] - 2026-07-28
 
 Faz 8 — Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme.
