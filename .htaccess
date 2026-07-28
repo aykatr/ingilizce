@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Uygulama içi klasörlere doğrudan erişimi engelle
+    RewriteRule ^(app|config|routes|storage|database)(/|$) - [F,L]
+
+    # Var olan dosya/klasörleri (assets vb.) doğrudan sun
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Diğer tüm istekleri front controller'a yönlendir
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "\.(json|lock|md)$">
+    Require all denied
+</FilesMatch>
