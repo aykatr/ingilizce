@@ -7,15 +7,19 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Session;
 use App\Repositories\AdminRepository;
+use App\Repositories\AuditLogRepository;
+use App\Services\AuditLogService;
 use App\Services\AuthService;
 
 class AuthController extends BaseController
 {
     private AuthService $authService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
         $this->authService = new AuthService(new AdminRepository());
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function showLoginForm(): void
@@ -50,6 +54,7 @@ class AuthController extends BaseController
         }
 
         Auth::login($admin['id']);
+        $this->auditLog->record('auth.login', "'{$admin['username']}' giriş yaptı.");
         $this->redirect(base_url('admin/dashboard'));
     }
 
@@ -58,6 +63,12 @@ class AuthController extends BaseController
         $request = new Request();
 
         if (Session::verifyCsrf($request->input('_csrf'))) {
+            $admin = Auth::user();
+
+            if ($admin) {
+                $this->auditLog->record('auth.logout', "'{$admin['username']}' çıkış yaptı.");
+            }
+
             Auth::logout();
         }
 

@@ -19,7 +19,7 @@ Bu proje, her biri kullanıcı onayı ile kapatılan fazlar halinde geliştirili
 | 5 | Oyun Motoru | ✅ Tamamlandı |
 | 6 | Ses Sistemi | ✅ Tamamlandı |
 | 7 | Puan ve Rozet Sistemi | ✅ Tamamlandı |
-| 8 | Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme | ⏳ Onay bekleniyor |
+| 8 | Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme | ✅ Tamamlandı |
 | 9 | Optimizasyon | ⏳ Bekliyor |
 | 10 | Kart Paketleri | ⏳ Bekliyor |
 | 11 | İlerleme ve Kaldığı Yerden Devam | ⏳ Bekliyor |
@@ -142,14 +142,17 @@ Puan, başarı mesajları ve rozetler birbirinden bağımsız sistemler olarak g
 
 **Teslim:** Admin CRUD (mesaj+rozet+geçiş mesajı, doğrulama dahil) curl ile, oyun akışı içinde mesaj seçimi + rozet kazanımı (tekli/çoklu, aynı anda birden fazla rozet) + geçiş mesajı (sonraki soru varken/yokken) + tekrar-vermeme + hatasız/hatalı senaryo ayrımı curl ile uçtan uca doğrulandı. Playwright ile 10 ek kontrol (dinamik mesaj, rozet toast bildirimi, geçiş mesajı toast'ı, sonuç ekranı özet, restart temizliği, rozetsiz oyun sonu) — **10/10 geçti**. Faz 5 (58 kontrol) ve Faz 6 (26 kontrol) regresyon paketleri tekrar çalıştırıldı, hâlâ temiz. Test sırasında `routes/web.php`'de daha önceden var olan iki ölü route (`GameController::state()/question()` — Faz 5 tasarım revizyonunda silinen metotlara işaret ediyorlardı) fark edildi ve temizlendi.
 
-## Faz 8 — Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme
+## Faz 8 — Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme ✅
 
-- [ ] Merkezi Medya Kütüphanesi — tüm görsel (WebP/PNG/JPG) ve ses (MP3/OGG) dosyalarını tek ekrandan yöneten yeni admin modülü: listele (görsel/ses ayrı), arama, filtreleme, önizleme/ses oynatma, dosya boyutu+türü, "kullanıldığı yerler" gösterimi, kullanılmayan dosyaları işaretleme, dosya değiştirme, dosya silme (kullanımdaysa engelle/uyar), toplu yükleme. Mevcut soru/mesaj/rozet/başlangıç-ekranı yükleme akışları bozulmaz — "Görsel/Ses Yükle" ile doğrudan yükleme hâlâ çalışır, buna ek olarak kütüphaneden mevcut bir dosya seçme seçeneği eklenir.
-- [ ] Site ayarları — Faz 3'te site URL, Faz 4'te varsayılan süre/puan için minimal başlatıldı; burada genel ayarlar admin menüsü tamamlanacak
-- [ ] Admin İşlem Logu (Audit Log) — giriş/çıkış, CRUD işlemleri, ayar değişiklikleri, lisans işlemleri, medya işlemleri kayıt altına alınır
-- [ ] Veritabanı Yedeği Alma — admin panelden tek tıkla SQL export indirme (geri yükleme bu fazın kapsamında değil)
+- [x] Merkezi Medya Kütüphanesi (`/admin/media-library`) — `media_files` tablosu + `App\Services\MediaLibraryService`. Sayfa her açıldığında `reconcile()` çalışır: `uploads/` altı yeniden taranır, diskte olup tabloda olmayan dosyalar (Faz 1-7'nin tüm mevcut soru/mesaj/rozet/başlangıç-ekranı dosyaları dahil) otomatik indekslenir, diskten silinmiş dosyaların kayıtları temizlenir — ayrı bir backfill migration'a gerek kalmadı. Listele (görsel/ses), arama, tür/kullanım filtresi, önizleme (`<img>`/`<audio controls>`), dosya boyutu+türü, "kullanıldığı yerler" (6 tabloyu tarayan `MediaFileRepository::usages()` — soru/seçenek/başarı mesajı/rozet/geçiş mesajı/başlangıç ekranı ayarı), kullanılmayan dosya rozeti, toplu yükleme (`uploads/media-library/` havuzu), aynı-uzantı dosya değiştirme, silme (kullanımdaysa `ValidationException` ile engellenir — kategori silme korumasıyla aynı desen).
+- [x] Mevcut yükleme ekranlarıyla entegrasyon — `assets/js/media-picker.js`: sayfa yüklendiğinde `data-media-picker="image|audio"` işaretli her `<input type="file">`'ın yanına otomatik "Kütüphaneden Seç" butonu ekler (soru formu: kart+soru+4 seçenek = 11 alan; başarı mesajı, rozet ×2, geçiş mesajı, başlangıç ekranı 10 görsel alanı). Seçilen dosya `fetch()`+`Blob`+`DataTransfer` ile gerçek bir `File` nesnesine dönüştürülüp `input.files`'a atanır — mevcut formlar, controller'lar ve `MediaUploadService` hiç değişmeden, sanki kullanıcı bilgisayarından o dosyayı seçmiş gibi çalışır. Doğrudan bilgisayardan yükleme de aynı şekilde çalışmaya devam eder.
+- [x] Site ayarları — nav'a Medya Kütüphanesi/Denetim Kaydı/Yedekleme bağlantıları eklendi; mevcut genel ayarlar (site URL, varsayılan süre/puan/can) ve başlangıç ekranı modülleri değişmeden korundu.
+- [x] Admin İşlem Logu (Audit Log) — `audit_logs` tablosu + `App\Services\AuditLogService`, `/admin/audit-log` (filtre: işlem türü, arama, tarih aralığı, sayfalama). Giriş/çıkış, tüm CRUD işlemleri (kategori/soru/başarı mesajı/rozet/geçiş mesajı), lisans oluşturma/durum değiştirme, site+başlangıç ekranı ayar güncelleme, şifre değiştirme ve medya işlemleri (yükleme/değiştirme/silme) kayıt altına alınır — her admin controller'da ilgili başarı noktasına tek satırlık `$this->auditLog->record(...)` çağrısı eklendi.
+- [x] Veritabanı Yedeği Alma — `App\Services\BackupService::generateSql()` PDO ile tüm tabloları (`SHOW CREATE TABLE` + `INSERT` satırları) saf PHP ile dışa aktarır (mysqldump gibi harici bir binary'ye bağımlı değil), `/admin/backup` sayfasından tek tıkla `.sql` dosyası indirilir.
 
-**Kapsam dışı (bilinçli):** PHP/sistem hata logu görüntüleme (sonraki bir sürüme bırakıldı), yedekten geri yükleme (restore).
+**Kapsam dışı (bilinçli):** PHP/sistem hata logu görüntüleme (sonraki bir sürüme bırakıldı), yedekten geri yükleme (restore), çoklu dil altyapısı (bu projede kapsam dışı — bkz. üstteki not).
+
+**Teslim:** Denetim kaydı (giriş/çıkış + kategori CRUD) ve medya kütüphanesi akışının tamamı (reconcile, liste, kullanım tespiti, kullanımdayken silme koruması, toplu yükleme, aynı-uzantı değiştirme, kullanılmayan dosya silme) curl ile uçtan uca doğrulandı; veritabanı yedeği indirme (`Content-Disposition`, DROP+INSERT satır sayıları, audit log kaydı) curl ile doğrulandı. Playwright ile 11 yeni kontrol (admin girişi, medya kütüphanesi listesi, 3 yeni nav bağlantısı, soru formunda 11 seçici butonu, seçici modal'dan gerçek `File` atama, diğer 3 formda buton varlığı) — **11/11 geçti**. Faz 5 (58), Faz 6/ses (26), Faz 7/başarı-rozet (8) ve geçiş mesajları (2) regresyon paketleri tekrar çalıştırıldı, hepsi temiz — toplam 105/105, 0 konsol hatası, 0 network hatası.
 
 ## Faz 9 — Optimizasyon
 

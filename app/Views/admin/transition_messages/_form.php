@@ -40,7 +40,7 @@ $formAction = $isEdit ? base_url('admin/transition-messages/' . $m['id']) : base
                         </div>
                     </div>
                 <?php endif; ?>
-                <input type="file" name="audio" class="form-control" accept=".mp3,.ogg">
+                <input type="file" name="audio" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
             </div>
 
             <div class="mb-3 form-check">

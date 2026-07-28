@@ -4,10 +4,12 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AuditLogRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\QuestionOptionRepository;
 use App\Repositories\QuestionRepository;
 use App\Repositories\SettingRepository;
+use App\Services\AuditLogService;
 use App\Services\CategoryService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\MediaUploadService;
@@ -19,6 +21,7 @@ class QuestionController extends AdminBaseController
     private QuestionService $questionService;
     private CategoryService $categoryService;
     private SettingService $settingService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
@@ -28,6 +31,7 @@ class QuestionController extends AdminBaseController
         $this->questionService = new QuestionService(new QuestionRepository(), new QuestionOptionRepository(), $media);
         $this->categoryService = new CategoryService(new CategoryRepository());
         $this->settingService = new SettingService(new SettingRepository());
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function index(): void
@@ -63,6 +67,7 @@ class QuestionController extends AdminBaseController
 
         try {
             $this->questionService->create($request->all(), $_FILES);
+            $this->auditLog->record('question.create', "'{$request->input('title')}' sorusu oluşturuldu.");
             Session::flash('success', 'Soru oluşturuldu.');
             $this->redirect(base_url('admin/questions'));
         } catch (ValidationException $e) {
@@ -102,6 +107,7 @@ class QuestionController extends AdminBaseController
 
         try {
             $this->questionService->update($id, $request->all(), $_FILES);
+            $this->auditLog->record('question.update', "'{$request->input('title')}' sorusu güncellendi (#{$id}).");
             Session::flash('success', 'Soru güncellendi.');
         } catch (ValidationException $e) {
             Session::flash('error', $e->getMessage());
@@ -116,6 +122,7 @@ class QuestionController extends AdminBaseController
 
         if (Session::verifyCsrf($request->input('_csrf'))) {
             $this->questionService->delete($id);
+            $this->auditLog->record('question.delete', "Soru silindi (#{$id}).");
             Session::flash('success', 'Soru silindi.');
         }
 

@@ -112,6 +112,14 @@ assets/           CSS, JS, görseller (doğrudan web'den erişilebilir)
 | `GET /admin/transition-messages/{id}/edit` | Geçiş mesajı düzenleme formu (giriş gerektirir) |
 | `POST /admin/transition-messages/{id}` | Geçiş mesajı güncelle (giriş gerektirir) |
 | `POST /admin/transition-messages/{id}/delete` | Geçiş mesajı sil (giriş gerektirir) |
+| `GET /admin/media-library` | Medya kütüphanesi listesi (giriş gerektirir) |
+| `GET /admin/media-library/api/list` | Medya listesi (JSON, "Kütüphaneden Seç" widget'ı için — giriş gerektirir) |
+| `POST /admin/media-library/upload` | Toplu dosya yükleme (giriş gerektirir) |
+| `POST /admin/media-library/{id}/replace` | Dosyayı aynı uzantıda yenisiyle değiştir (giriş gerektirir) |
+| `POST /admin/media-library/{id}/delete` | Dosya sil — kullanımdaysa engellenir (giriş gerektirir) |
+| `GET /admin/audit-log` | Denetim kaydı listesi, filtre+sayfalama (giriş gerektirir) |
+| `GET /admin/backup` | Yedekleme sayfası (giriş gerektirir) |
+| `POST /admin/backup/download` | Veritabanının SQL yedeğini indirir (giriş gerektirir) |
 
 Giriş gerektiren rotalar `App\Controllers\Admin\AdminBaseController` üzerinden korunur; oturumu olmayan istekler `/admin/login`'e yönlendirilir.
 
@@ -168,6 +176,16 @@ Tüm ses oynatma `assets/js/audio-manager.js` üzerinden geçer (`window.AudioMa
 - Aynı anda yalnızca bir "ana" ses çalar (kart/soru/seçenek/doğru/yanlış/geçiş/rozet kategorileri bu kanalı paylaşır); arayüz sesleri (`ui` kategorisi) ayrı kanalda, ana sesi etkilemez.
 - Aynı sesin üst üste binmesi engellenir; eşit veya yüksek öncelikli yeni istek mevcut sesi 180ms fade-out ile keser, düşük öncelikli istek sıraya alınır.
 - `GameEngine` minimum entegrasyon: `playCardAudio()/playQuestionAudio()/playOptionAudio()` DB'den gelen gerçek ses yollarını (`questions`/`question_options` tabloları) `AudioManager` üzerinden çalar; yeni soru yüklendiğinde ilgili sesler otomatik preload edilir. Correct/wrong/badge kategorileri Faz 7'de, `transition` kategorisi geçiş mesajları modülüyle bağlandı — 8 kategorinin tamamı artık kullanımda.
+
+## Medya Kütüphanesi, Denetim Kaydı ve Yedekleme
+
+**Medya Kütüphanesi** (`/admin/media-library`) sistemdeki tüm görsel (WebP/PNG/JPG) ve ses (MP3/OGG) dosyalarını tek ekranda listeler — soru/seçenek/başarı mesajı/rozet/geçiş mesajı/başlangıç ekranı için daha önce yüklenmiş her dosya dahil, ayrıca bir aktarım gerekmeden otomatik görünür. Arama, tür/kullanım filtresi, önizleme (görsel için thumbnail, ses için oynatıcı), dosya boyutu/türü, "kullanıldığı yerler" listesi (ilgili kaydın düzenleme sayfasına bağlantılı), toplu yükleme ve aynı-uzantı dosya değiştirme desteklenir. Kullanımda olan bir dosya silinemez — önce ilgili kayıttan kaldırılması gerekir.
+
+Soru/mesaj/rozet/geçiş mesajı/başlangıç ekranı formlarındaki her dosya alanının yanında bir **"Kütüphaneden Seç"** butonu bulunur; bu buton kütüphaneden seçilen dosyayı gerçek bir dosya olarak forma yükler (bilgisayardan seçmiş gibi) — istenirse bilgisayardan doğrudan yükleme de her zaman çalışmaya devam eder, ikisi birbirini dışlamaz.
+
+**Denetim Kaydı** (`/admin/audit-log`) giriş/çıkış, tüm içerik CRUD işlemleri, ayar güncellemeleri, lisans işlemleri ve medya işlemlerini kim/ne zaman/ne yaptı bilgisiyle kayıt altına alır; işlem türü, arama ve tarih aralığına göre filtrelenebilir.
+
+**Yedekleme** (`/admin/backup`) veritabanının tam bir SQL yedeğini (tüm tablo yapıları + veriler) tek tıkla `.sql` dosyası olarak indirmeyi sağlar. Bu sürümde yalnızca indirme desteklenir; yedekten geri yükleme (restore) kapsam dışıdır.
 
 ## Sağlık Kontrolü
 

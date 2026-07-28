@@ -48,7 +48,7 @@ $formAction = $isEdit ? base_url('admin/messages/' . $m['id']) : base_url('admin
                         </div>
                     </div>
                 <?php endif; ?>
-                <input type="file" name="audio" class="form-control" accept=".mp3,.ogg">
+                <input type="file" name="audio" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
             </div>
 
             <div class="mb-3 form-check">

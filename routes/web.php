@@ -1,11 +1,14 @@
 <?php
 
 use App\Controllers\Admin\AchievementMessageController;
+use App\Controllers\Admin\AuditLogController;
 use App\Controllers\Admin\AuthController;
+use App\Controllers\Admin\BackupController;
 use App\Controllers\Admin\BadgeController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\LicenseController;
+use App\Controllers\Admin\MediaLibraryController;
 use App\Controllers\Admin\PasswordController;
 use App\Controllers\Admin\QuestionController;
 use App\Controllers\Admin\SettingController;
@@ -73,6 +76,17 @@ $router->post('/admin/transition-messages', [TransitionMessageController::class,
 $router->get('/admin/transition-messages/{id}/edit', [TransitionMessageController::class, 'edit']);
 $router->post('/admin/transition-messages/{id}', [TransitionMessageController::class, 'update']);
 $router->post('/admin/transition-messages/{id}/delete', [TransitionMessageController::class, 'destroy']);
+
+$router->get('/admin/audit-log', [AuditLogController::class, 'index']);
+
+$router->get('/admin/media-library', [MediaLibraryController::class, 'index']);
+$router->get('/admin/media-library/api/list', [MediaLibraryController::class, 'apiList']);
+$router->post('/admin/media-library/upload', [MediaLibraryController::class, 'upload']);
+$router->post('/admin/media-library/{id}/replace', [MediaLibraryController::class, 'replace']);
+$router->post('/admin/media-library/{id}/delete', [MediaLibraryController::class, 'destroy']);
+
+$router->get('/admin/backup', [BackupController::class, 'index']);
+$router->post('/admin/backup/download', [BackupController::class, 'download']);
 
 $router->post('/play/api/start', [GameController::class, 'start']);
 $router->post('/play/api/answer', [GameController::class, 'answer']);

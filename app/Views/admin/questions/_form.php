@@ -99,7 +99,7 @@ $formAction = $isEdit ? base_url('admin/questions/' . $q['id']) : base_url('admi
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            <input type="file" id="card_image" name="card_image" class="form-control" accept=".webp,.png,.jpg,.jpeg">
+                            <input type="file" id="card_image" name="card_image" class="form-control" accept=".webp,.png,.jpg,.jpeg" data-media-picker="image">
                         </div>
                         <div class="col-md-6">
                             <label for="card_audio" class="form-label">Kart Sesi (MP3, OGG)</label>
@@ -112,7 +112,7 @@ $formAction = $isEdit ? base_url('admin/questions/' . $q['id']) : base_url('admi
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            <input type="file" id="card_audio" name="card_audio" class="form-control" accept=".mp3,.ogg">
+                            <input type="file" id="card_audio" name="card_audio" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
                         </div>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ $formAction = $isEdit ? base_url('admin/questions/' . $q['id']) : base_url('admi
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            <input type="file" id="question_audio" name="question_audio" class="form-control" accept=".mp3,.ogg">
+                            <input type="file" id="question_audio" name="question_audio" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
                         </div>
                     </div>
                 </div>
@@ -168,7 +168,7 @@ $formAction = $isEdit ? base_url('admin/questions/' . $q['id']) : base_url('admi
                                             </div>
                                         </div>
                                     <?php endif; ?>
-                                    <input type="file" name="options[<?= $position ?>][image]" class="form-control" accept=".webp,.png,.jpg,.jpeg">
+                                    <input type="file" name="options[<?= $position ?>][image]" class="form-control" accept=".webp,.png,.jpg,.jpeg" data-media-picker="image">
                                 </div>
                                 <div class="mb-2">
                                     <label class="form-label">Ses</label>
@@ -181,7 +181,7 @@ $formAction = $isEdit ? base_url('admin/questions/' . $q['id']) : base_url('admi
                                             </div>
                                         </div>
                                     <?php endif; ?>
-                                    <input type="file" name="options[<?= $position ?>][audio]" class="form-control" accept=".mp3,.ogg">
+                                    <input type="file" name="options[<?= $position ?>][audio]" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
                                 </div>
                                 <div class="form-check">
                                     <input type="radio" id="correct_<?= $position ?>" name="correct_option" value="<?= $position ?>" class="form-check-input" <?= !empty($option['is_correct']) ? 'checked' : '' ?> required>

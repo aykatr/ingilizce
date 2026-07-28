@@ -4,8 +4,10 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AuditLogRepository;
 use App\Repositories\LicenseRepository;
 use App\Repositories\SettingRepository;
+use App\Services\AuditLogService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\LicenseService;
 use App\Services\SettingService;
@@ -14,12 +16,14 @@ class LicenseController extends AdminBaseController
 {
     private LicenseService $licenseService;
     private SettingService $settingService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
         parent::__construct();
         $this->licenseService = new LicenseService(new LicenseRepository());
         $this->settingService = new SettingService(new SettingRepository());
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function index(): void
@@ -71,6 +75,7 @@ class LicenseController extends AdminBaseController
         }
 
         $siteUrl = $this->settingService->getSiteUrl();
+        $this->auditLog->record('license.create', "'{$license['name']}' lisansı oluşturuldu.");
         Session::flash('success', 'Lisans oluşturuldu.');
         Session::flash('license_link', $siteUrl . '/play.php?t=' . $license['token']);
         $this->redirect(base_url('admin/licenses'));
@@ -82,6 +87,7 @@ class LicenseController extends AdminBaseController
 
         if (Session::verifyCsrf($request->input('_csrf'))) {
             $this->licenseService->toggleStatus($id);
+            $this->auditLog->record('license.toggle', "Lisans durumu değiştirildi (#{$id}).");
         }
 
         $this->redirect(base_url('admin/licenses'));

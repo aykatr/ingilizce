@@ -5,17 +5,21 @@ namespace App\Controllers\Admin;
 use App\Core\Request;
 use App\Core\Session;
 use App\Repositories\AdminRepository;
+use App\Repositories\AuditLogRepository;
+use App\Services\AuditLogService;
 use App\Services\AuthService;
 use App\Services\Exceptions\ValidationException;
 
 class PasswordController extends AdminBaseController
 {
     private AuthService $authService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
         parent::__construct();
         $this->authService = new AuthService(new AdminRepository());
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function edit(): void
@@ -44,6 +48,7 @@ class PasswordController extends AdminBaseController
                 (string) $request->input('new_password'),
                 (string) $request->input('new_password_confirmation')
             );
+            $this->auditLog->record('admin.password_change', "'{$this->admin['username']}' şifresini değiştirdi.");
             Session::flash('success', 'Şifreniz güncellendi.');
         } catch (ValidationException $e) {
             Session::flash('error', $e->getMessage());

@@ -19,7 +19,10 @@
                 <a href="<?= base_url('admin/badges') ?>" class="nav-link d-inline">Rozetler</a>
                 <a href="<?= base_url('admin/transition-messages') ?>" class="nav-link d-inline">Geçiş Mesajları</a>
                 <a href="<?= base_url('admin/licenses') ?>" class="nav-link d-inline">Lisanslar</a>
+                <a href="<?= base_url('admin/media-library') ?>" class="nav-link d-inline">Medya Kütüphanesi</a>
                 <a href="<?= base_url('admin/settings') ?>" class="nav-link d-inline">Site Ayarları</a>
+                <a href="<?= base_url('admin/audit-log') ?>" class="nav-link d-inline">Denetim Kaydı</a>
+                <a href="<?= base_url('admin/backup') ?>" class="nav-link d-inline">Yedekleme</a>
                 <a href="<?= base_url('admin/password') ?>" class="nav-link d-inline">Şifre Değiştir</a>
                 <form method="POST" action="<?= base_url('admin/logout') ?>" class="mb-0">
                     <?= csrf_field() ?>
@@ -32,5 +35,6 @@
         <?= $content ?>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= asset('js/media-picker.js') ?>"></script>
 </body>
 </html>

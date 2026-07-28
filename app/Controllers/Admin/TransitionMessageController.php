@@ -4,8 +4,10 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AuditLogRepository;
 use App\Repositories\TransitionMessageRepository;
 use App\Services\AnimationTypes;
+use App\Services\AuditLogService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\MediaUploadService;
 use App\Services\TransitionMessageService;
@@ -13,6 +15,7 @@ use App\Services\TransitionMessageService;
 class TransitionMessageController extends AdminBaseController
 {
     private TransitionMessageService $messageService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
@@ -20,6 +23,7 @@ class TransitionMessageController extends AdminBaseController
 
         $media = new MediaUploadService(config('app.uploads_path'));
         $this->messageService = new TransitionMessageService(new TransitionMessageRepository(), $media);
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function index(): void
@@ -51,6 +55,7 @@ class TransitionMessageController extends AdminBaseController
 
         try {
             $this->messageService->create($request->all(), $_FILES);
+            $this->auditLog->record('transition_message.create', "'{$request->input('title')}' geçiş mesajı oluşturuldu.");
             Session::flash('success', 'Mesaj oluşturuldu.');
             $this->redirect(base_url('admin/transition-messages'));
         } catch (ValidationException $e) {
@@ -86,6 +91,7 @@ class TransitionMessageController extends AdminBaseController
 
         try {
             $this->messageService->update($id, $request->all(), $_FILES);
+            $this->auditLog->record('transition_message.update', "'{$request->input('title')}' geçiş mesajı güncellendi (#{$id}).");
             Session::flash('success', 'Mesaj güncellendi.');
             $this->redirect(base_url('admin/transition-messages'));
         } catch (ValidationException $e) {
@@ -100,6 +106,7 @@ class TransitionMessageController extends AdminBaseController
 
         if (Session::verifyCsrf($request->input('_csrf'))) {
             $this->messageService->delete($id);
+            $this->auditLog->record('transition_message.delete', "Geçiş mesajı silindi (#{$id}).");
             Session::flash('success', 'Mesaj silindi.');
         }
 

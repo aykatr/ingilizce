@@ -2,6 +2,26 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.9.0] - 2026-07-28
+
+Faz 8 — Medya Kütüphanesi, Site Ayarları, Audit Log ve DB Yedekleme.
+
+### Eklendi
+
+- **Merkezi Medya Kütüphanesi** (`/admin/media-library`) — `media_files` tablosu + `App\Services\MediaLibraryService`. Sayfa her açıldığında `reconcile()` çalışarak `uploads/` altını yeniden tarar; diskte olup tabloda olmayan dosyalar (Faz 1-7'nin tüm mevcut dosyaları dahil) otomatik indekslenir, silinmiş dosyaların kayıtları temizlenir. Listele, arama, tür/kullanım filtresi, önizleme (görsel/ses), dosya boyutu/türü, "kullanıldığı yerler" (6 tabloyu tarayan tespit), toplu yükleme, aynı-uzantı dosya değiştirme, kullanımdayken silme koruması.
+- `assets/js/media-picker.js` — mevcut soru/başarı mesajı/rozet/geçiş mesajı/başlangıç ekranı formlarındaki dosya alanlarına (`data-media-picker` özniteliğiyle işaretli, 15 alan) otomatik "Kütüphaneden Seç" butonu ekler; seçilen dosya `fetch`+`Blob`+`DataTransfer` ile gerçek bir `File` nesnesine dönüştürülüp forma atanır — backend/controller tarafında hiçbir değişiklik gerekmeden mevcut yükleme akışları aynen çalışır.
+- **Admin İşlem Logu (Audit Log)** (`/admin/audit-log`) — `audit_logs` tablosu + `App\Services\AuditLogService`. Giriş/çıkış, kategori/soru/başarı mesajı/rozet/geçiş mesajı CRUD işlemleri, lisans oluşturma/durum değiştirme, site+başlangıç ekranı ayar güncelleme, şifre değiştirme ve medya işlemleri kayıt altına alınır; işlem türü/arama/tarih aralığı filtresi ve sayfalama.
+- **Veritabanı Yedeği Alma** (`/admin/backup`) — `App\Services\BackupService::generateSql()` saf PHP ile (harici `mysqldump` bağımlılığı olmadan) tüm tabloların yapı+veri SQL yedeğini üretir, tek tıkla `.sql` dosyası indirilir. Geri yükleme (restore) bu sürümde kapsam dışı.
+- Admin nav'a Medya Kütüphanesi, Denetim Kaydı, Yedekleme bağlantıları eklendi.
+
+### Kaldırıldı
+
+- Roadmap'ten "Çoklu Dil Altyapısı" fazı tamamen çıkarıldı — yönetim paneli sadece Türkçe kalacak, oyun içeriği zaten admin panelinden İngilizce girildiği için ayrı bir i18n altyapısına gerek olmadığına karar verildi. Sonraki fazlar buna göre yeniden numaralandırıldı.
+
+### Test
+
+Denetim kaydı ve medya kütüphanesi akışının tamamı (reconcile, liste, kullanım tespiti, silme koruması, toplu yükleme, dosya değiştirme) ve veritabanı yedeği indirme curl ile uçtan uca doğrulandı. Playwright ile 11 yeni kontrol (admin girişi, medya kütüphanesi listesi, yeni nav bağlantıları, medya seçici modal + gerçek `File` ataması, 4 formda buton varlığı) — 11/11 geçti. Faz 5 (58), Faz 6/ses (26), Faz 7/başarı-rozet (8) ve geçiş mesajları (2) regresyon paketleri tekrar çalıştırıldı, hepsi temiz — toplam 105/105, 0 konsol hatası, 0 network hatası.
+
 ## [0.8.1] - 2026-07-28
 
 Faz 7 onayından sonra, Faz 8'e geçmeden önce tamamlanan ek modül: Geçiş Mesajları (Faz 7'nin orijinal taslağında vardı, o fazın kapsamına dahil edilmemişti).

@@ -4,8 +4,10 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AuditLogRepository;
 use App\Repositories\BadgeRepository;
 use App\Services\AnimationTypes;
+use App\Services\AuditLogService;
 use App\Services\BadgeService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\MediaUploadService;
@@ -13,6 +15,7 @@ use App\Services\MediaUploadService;
 class BadgeController extends AdminBaseController
 {
     private BadgeService $badgeService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
@@ -20,6 +23,7 @@ class BadgeController extends AdminBaseController
 
         $media = new MediaUploadService(config('app.uploads_path'));
         $this->badgeService = new BadgeService(new BadgeRepository(), $media);
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function index(): void
@@ -53,6 +57,7 @@ class BadgeController extends AdminBaseController
 
         try {
             $this->badgeService->create($request->all(), $_FILES);
+            $this->auditLog->record('badge.create', "'{$request->input('title')}' rozeti oluşturuldu.");
             Session::flash('success', 'Rozet oluşturuldu.');
             $this->redirect(base_url('admin/badges'));
         } catch (ValidationException $e) {
@@ -89,6 +94,7 @@ class BadgeController extends AdminBaseController
 
         try {
             $this->badgeService->update($id, $request->all(), $_FILES);
+            $this->auditLog->record('badge.update', "'{$request->input('title')}' rozeti güncellendi (#{$id}).");
             Session::flash('success', 'Rozet güncellendi.');
             $this->redirect(base_url('admin/badges'));
         } catch (ValidationException $e) {
@@ -103,6 +109,7 @@ class BadgeController extends AdminBaseController
 
         if (Session::verifyCsrf($request->input('_csrf'))) {
             $this->badgeService->delete($id);
+            $this->auditLog->record('badge.delete', "Rozet silindi (#{$id}).");
             Session::flash('success', 'Rozet silindi.');
         }
 

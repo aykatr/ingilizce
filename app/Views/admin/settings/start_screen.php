@@ -60,7 +60,7 @@ $imageFields = [
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <input type="file" name="<?= $field ?>" class="form-control" accept=".webp,.png,.jpg,.jpeg">
+                        <input type="file" name="<?= $field ?>" class="form-control" accept=".webp,.png,.jpg,.jpeg" data-media-picker="image">
                     </div>
                 <?php endforeach; ?>
             </div>

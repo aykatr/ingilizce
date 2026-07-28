@@ -61,7 +61,7 @@ $formAction = $isEdit ? base_url('admin/badges/' . $b['id']) : base_url('admin/b
                             </div>
                         </div>
                     <?php endif; ?>
-                    <input type="file" name="image" class="form-control" accept=".webp,.png,.jpg,.jpeg">
+                    <input type="file" name="image" class="form-control" accept=".webp,.png,.jpg,.jpeg" data-media-picker="image">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Ses (MP3, OGG)</label>
@@ -74,7 +74,7 @@ $formAction = $isEdit ? base_url('admin/badges/' . $b['id']) : base_url('admin/b
                             </div>
                         </div>
                     <?php endif; ?>
-                    <input type="file" name="audio" class="form-control" accept=".mp3,.ogg">
+                    <input type="file" name="audio" class="form-control" accept=".mp3,.ogg" data-media-picker="audio">
                 </div>
             </div>
 

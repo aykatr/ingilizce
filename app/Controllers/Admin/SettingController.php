@@ -4,18 +4,22 @@ namespace App\Controllers\Admin;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Repositories\AuditLogRepository;
 use App\Repositories\SettingRepository;
+use App\Services\AuditLogService;
 use App\Services\Exceptions\ValidationException;
 use App\Services\SettingService;
 
 class SettingController extends AdminBaseController
 {
     private SettingService $settingService;
+    private AuditLogService $auditLog;
 
     public function __construct()
     {
         parent::__construct();
         $this->settingService = new SettingService(new SettingRepository());
+        $this->auditLog = new AuditLogService(new AuditLogRepository());
     }
 
     public function edit(): void
@@ -47,6 +51,7 @@ class SettingController extends AdminBaseController
                 (int) $request->input('default_points', 10),
                 (int) $request->input('default_lives', 3)
             );
+            $this->auditLog->record('setting.update', 'Site ayarları güncellendi.');
             Session::flash('success', 'Ayarlar güncellendi.');
         } catch (ValidationException $e) {
             Session::flash('error', $e->getMessage());
