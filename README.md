@@ -171,6 +171,8 @@ Fiziksel kartların dijital karşılığı olan bir seçim ekranı: aktif sorula
 
 Can her kart için bağımsız olduğundan, rozet koşullarındaki "N doğru cevap" / "belirli puana ulaşma" gibi çok-adımlı koşullar artık kart-bazlı değil ziyaret-bazlı (yukarıdaki `MenuProgressService`) değerlendirilir — aksi halde tek soruluk bir kart oturumunda hiçbir zaman sağlanamazlardı.
 
+**Görünüm**: Kullanıcının sağladığı referans tasarıma göre — mor ışın/bulut zeminli panel, "Ana Sayfa"/"Ses" ikon-etiket butonları, kart başına döngüsel pastel renk teması (8 tema, kart sırasına göre), her kartın altında 3 yıldız + "Tamamlandı"/"Başlamadın" durum etiketi, alt kısımda Toplam Puan/Tamamlanan Kart/Rozetler ve yeşil bir ilerleme çubuğu. Veri modelimiz yalnızca tamamlandı/tamamlanmadı ikili durumunu tuttuğu için referans tasarımdaki bazı kartların kısmi (1/3, 2/3) yıldız görünümü uygulanmadı — tamamlanan kart 3/3 dolu yıldız, tamamlanmamış kart boş yıldız gösterir.
+
 ## Puan, Başarı Mesajları, Rozetler ve Geçiş Mesajları
 
 Dört bağımsız sistem: **Puan** (soru bazlı, doğru cevapta eklenir, `GameSessionService` içinde tutulur, sonuç ekranında gösterilir), **Başarı Mesajları** (`/admin/messages` — Doğru/Yanlış grupları, her mesaj başlık+ses+animasyon tipi+aktif/pasif; oyun sırasında ilgili gruptan aktif bir mesaj rastgele seçilir), **Rozetler** (`/admin/badges` — başlık+açıklama+görsel+ses+animasyon+koşul+aktif/pasif), **Geçiş Mesajları** (`/admin/transition-messages` — başlık+ses+animasyon tipi+aktif/pasif, tek grup; her doğru cevapta sıradaki bir soru varsa aktif bir mesaj rastgele seçilir, `AudioManager`'ın `transition` kategorisiyle çalınır).

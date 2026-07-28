@@ -2,6 +2,27 @@
 
 Bu proje [Keep a Changelog](https://keepachangelog.com/) formatını takip eder.
 
+## [0.10.1] - 2026-07-28
+
+Kart Seçim Menüsü'nün kullanıcı referans tasarımına göre görsel revizyonu. İş mantığı, veri modeli ve GameEngine'e dokunulmadı — yalnızca `#screen-menu` markup+CSS'i.
+
+### Değiştirildi
+
+- `#screen-menu` baştan tasarlandı: mor ışın/bulut zeminli panel, "Ana Sayfa"/"Ses" ikon+etiket butonları (yeni `#btn-home-menu` — Başlangıç Ekranı'na saf gezinme, veri etkilenmez), kart başına döngüsel 8 pastel renk teması, her kartın altında 3 yıldız + "Tamamlandı"/"Başlamadın" durum etiketi, alt kısımda Toplam Puan/Tamamlanan Kart/Rozetler + yeşil ilerleme çubuğu.
+- Tamamlanma görünümü (yıldız rengi, durum etiketi metni, ✓ rozeti) tamamen `.is-completed` CSS sınıfı üzerinden sürülüyor — `game-ui.js`'in zaten yaptığı `classList.add('is-completed')` dışında yeni bir DOM güncelleme mantığı eklenmedi.
+
+### Düzeltildi
+
+- Restyle sırasında bulunan bug: `updateMuteIcons()` yeni buton yapısında `#btn-mute-menu`'nün tüm içeriğini (ikon+etiket) siliyordu; artık yalnızca ikon span'ını hedefliyor.
+
+### Bilinen sadeleştirme
+
+- Referans tasarımdaki bazı kartların kısmi (1/3, 2/3) yıldız durumu uygulanmadı — veri modelimiz yalnızca tamamlandı/tamamlanmadı ikili durumu tuttuğu için (kısmi ilerlemeyi uydurmak veri yapısına dokunma kısıtını ihlal ederdi). Tamamlanan kart 3/3 dolu yıldız, tamamlanmamış kart boş yıldız gösterir.
+
+### Test
+
+Playwright ile 390px/420px/360px genişliklerde görsel doğrulama (yatay taşma yok, tamamlanma durumu reaktif güncelleniyor) yapıldı; mevcut 15 (`test-card-menu.js`) + 26 (`test-audio.js`) kontrol tekrar çalıştırılarak regresyon olmadığı doğrulandı, hepsi temiz.
+
 ## [0.10.0] - 2026-07-28
 
 Faz 9'dan önce istenen oyun akışı revizyonu: Kart Seçim Menüsü. Kart=Soru mimarisi, veritabanı şeması ve GameEngine'in temel mekanikleri değişmedi; DB şemasına hiçbir tablo/kolon eklenmedi.

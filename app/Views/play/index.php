@@ -72,41 +72,108 @@
                 <div class="game-version">v1.0.0</div>
             </section>
 
+            <?php
+                $menuCardPalette = [
+                    ['bg' => '#ede6fa', 'accent' => '#7c4dbd', 'title' => '#6b3fa0'],
+                    ['bg' => '#fce1ec', 'accent' => '#e14f86', 'title' => '#d6336c'],
+                    ['bg' => '#dceefb', 'accent' => '#2f8fd1', 'title' => '#1971c2'],
+                    ['bg' => '#fcf3d9', 'accent' => '#d9a404', 'title' => '#b8860b'],
+                    ['bg' => '#e4f3de', 'accent' => '#58a854', 'title' => '#3f8f3b'],
+                    ['bg' => '#e3e7fb', 'accent' => '#5c6fd1', 'title' => '#4453b8'],
+                    ['bg' => '#fce7d6', 'accent' => '#e8823a', 'title' => '#d9660a'],
+                    ['bg' => '#dff3f0', 'accent' => '#319795', 'title' => '#1f7a73'],
+                ];
+                $menuTotalCards = count($menuCards);
+                $menuProgressPct = $menuTotalCards > 0 ? (int) round($menuProgress['completedCount'] / $menuTotalCards * 100) : 0;
+            ?>
             <section id="screen-menu" class="game-screen<?= !empty($menuSettings['menu_background_image']) ? ' has-menu-bg' : '' ?>"<?= !empty($menuSettings['menu_background_image']) ? ' style="background-image: url(' . e(base_url($menuSettings['menu_background_image'])) . ');"' : '' ?>>
-                <div class="top-bar">
-                    <button type="button" class="icon-btn" id="btn-mute-menu" aria-label="Ses">🔊</button>
-                </div>
+                <div class="menu-header">
+                    <button type="button" class="menu-icon-btn" id="btn-home-menu">
+                        <span class="menu-icon-circle menu-icon-home">🏠</span>
+                        <span class="menu-icon-label">ANA SAYFA</span>
+                    </button>
 
-                <h1 class="menu-title"><?= e($menuSettings['menu_title']) ?></h1>
-                <?php if ($menuSettings['menu_description'] !== ''): ?>
-                    <p class="menu-description"><?= e($menuSettings['menu_description']) ?></p>
-                <?php endif; ?>
+                    <div class="menu-header-title">
+                        <h1 class="menu-title"><?= e($menuSettings['menu_title']) ?></h1>
+                        <?php if ($menuSettings['menu_description'] !== ''): ?>
+                            <p class="menu-description"><?= e($menuSettings['menu_description']) ?></p>
+                        <?php endif; ?>
+                    </div>
 
-                <div class="menu-stats-row">
-                    <div class="menu-stat">⭐ <span id="menu-total-score"><?= e((string) $menuProgress['totalScore']) ?></span> Puan</div>
-                    <div class="menu-stat">✅ <span id="menu-completed-count"><?= e((string) $menuProgress['completedCount']) ?></span> / <?= e((string) count($menuCards)) ?> Kart</div>
-                    <div class="menu-stat">🏅 <span id="menu-total-badges"><?= e((string) $menuProgress['totalBadges']) ?></span> Rozet</div>
+                    <button type="button" class="menu-icon-btn" id="btn-mute-menu">
+                        <span class="menu-icon-circle menu-icon-mute">🔊</span>
+                        <span class="menu-icon-label" id="menu-mute-label">SES AÇIK</span>
+                    </button>
                 </div>
 
                 <?php if (empty($menuCards)): ?>
                     <p class="text-center">Henüz aktif kart yok.</p>
                 <?php else: ?>
-                    <div class="menu-grid" style="--menu-columns: <?= (int) $menuSettings['menu_columns'] ?>; --menu-gap: <?= (int) $menuSettings['menu_card_gap'] ?>px; --menu-card-size: <?= (int) $menuSettings['menu_card_size'] ?>px; --menu-radius: <?= (int) $menuSettings['menu_card_radius'] ?>px;">
-                        <?php foreach ($menuCards as $card): ?>
-                            <button type="button" class="menu-card<?= in_array((int) $card['id'], $menuProgress['completedCardIds'], true) ? ' is-completed' : '' ?>" data-question-id="<?= (int) $card['id'] ?>">
-                                <div class="menu-card-image-frame">
-                                    <?php if (!empty($card['card_image'])): ?>
-                                        <img src="<?= e(base_url($card['card_image'])) ?>" alt="" class="menu-card-image">
-                                    <?php else: ?>
-                                        <div class="image-placeholder">🖼️</div>
-                                    <?php endif; ?>
+                    <div class="menu-panel">
+                        <div class="menu-grid" style="--menu-columns: <?= (int) $menuSettings['menu_columns'] ?>; --menu-gap: <?= (int) $menuSettings['menu_card_gap'] ?>px; --menu-card-size: <?= (int) $menuSettings['menu_card_size'] ?>px; --menu-radius: <?= (int) $menuSettings['menu_card_radius'] ?>px;">
+                            <?php foreach ($menuCards as $cardIndex => $card): ?>
+                                <?php
+                                    $cardTheme = $menuCardPalette[$cardIndex % count($menuCardPalette)];
+                                    $cardCompleted = in_array((int) $card['id'], $menuProgress['completedCardIds'], true);
+                                ?>
+                                <button type="button" class="menu-card<?= $cardCompleted ? ' is-completed' : '' ?>" data-question-id="<?= (int) $card['id'] ?>" style="--card-bg: <?= e($cardTheme['bg']) ?>; --card-accent: <?= e($cardTheme['accent']) ?>; --card-title: <?= e($cardTheme['title']) ?>;">
                                     <span class="menu-card-check">✓</span>
-                                </div>
-                                <div class="menu-card-title"><?= e($card['title']) ?></div>
-                            </button>
-                        <?php endforeach; ?>
+                                    <div class="menu-card-title"><?= e($card['title']) ?></div>
+                                    <div class="menu-card-image-frame">
+                                        <?php if (!empty($card['card_image'])): ?>
+                                            <img src="<?= e(base_url($card['card_image'])) ?>" alt="" class="menu-card-image">
+                                        <?php else: ?>
+                                            <div class="image-placeholder">🖼️</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="menu-card-stars">
+                                        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                                    </div>
+                                    <div class="menu-card-status">
+                                        <span class="status-not-started">BAŞLAMADIN</span>
+                                        <span class="status-completed">✓ TAMAMLANDI</span>
+                                    </div>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
+
+                <div class="menu-stats-bar">
+                    <div class="menu-stats-item">
+                        <span class="menu-stats-icon">🏆</span>
+                        <div>
+                            <div class="menu-stats-label">TOPLAM PUAN</div>
+                            <div class="menu-stats-value" id="menu-total-score"><?= e((string) $menuProgress['totalScore']) ?></div>
+                        </div>
+                    </div>
+                    <div class="menu-stats-item">
+                        <span class="menu-stats-icon">⭐</span>
+                        <div>
+                            <div class="menu-stats-label">TAMAMLANAN KART</div>
+                            <div class="menu-stats-value"><span id="menu-completed-count"><?= e((string) $menuProgress['completedCount']) ?></span> / <span id="menu-total-cards"><?= e((string) $menuTotalCards) ?></span></div>
+                        </div>
+                    </div>
+                    <div class="menu-stats-item">
+                        <span class="menu-stats-icon">🛡️</span>
+                        <div>
+                            <div class="menu-stats-label">ROZETLER</div>
+                            <div class="menu-stats-value" id="menu-total-badges"><?= e((string) $menuProgress['totalBadges']) ?></div>
+                        </div>
+                    </div>
+                    <div class="menu-progress-block">
+                        <div class="menu-progress-header">
+                            <span>İLERLEMEM</span>
+                            <span class="menu-progress-pct" id="menu-progress-pct"><?= $menuProgressPct ?>%</span>
+                        </div>
+                        <div class="menu-progress-track">
+                            <div class="menu-progress-fill" id="menu-progress-fill" style="width: <?= $menuProgressPct ?>%;"></div>
+                        </div>
+                        <div class="menu-progress-caption"><span id="menu-progress-caption-count"><?= e((string) $menuProgress['completedCount']) ?> / <?= e((string) $menuTotalCards) ?></span> kart tamamlandı</div>
+                    </div>
+                </div>
+
+                <p class="menu-footer-tagline">★ Her kart yeni bir macera, her doğru cevap bir yıldız! ★</p>
             </section>
 
             <section id="screen-game" class="game-screen">

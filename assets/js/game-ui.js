@@ -45,10 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateMuteIcons() {
-        const icon = audio.isMuted() ? '🔇' : '🔊';
+        const muted = audio.isMuted();
+        const icon = muted ? '🔇' : '🔊';
         document.getElementById('btn-mute-start').textContent = icon;
-        document.getElementById('btn-mute-menu').textContent = icon;
         document.getElementById('btn-mute-game').textContent = icon;
+
+        const menuIcon = document.querySelector('#btn-mute-menu .menu-icon-circle');
+        const menuLabel = document.getElementById('menu-mute-label');
+        if (menuIcon) menuIcon.textContent = icon;
+        if (menuLabel) menuLabel.textContent = muted ? 'SES KAPALI' : 'SES AÇIK';
     }
 
     function toggleMute() {
@@ -75,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-start-game').addEventListener('click', () => {
         audio.prime();
         showScreen('menu');
+    });
+
+    document.getElementById('btn-home-menu').addEventListener('click', () => {
+        showScreen('start');
     });
 
     document.querySelectorAll('.menu-card').forEach((card) => {
@@ -218,6 +227,17 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('menu-total-score').textContent = engine.menuProgress.totalScore;
             document.getElementById('menu-completed-count').textContent = engine.menuProgress.completedCount;
             document.getElementById('menu-total-badges').textContent = engine.menuProgress.totalBadges;
+
+            const totalCardsEl = document.getElementById('menu-total-cards');
+            const totalCards = totalCardsEl ? Number(totalCardsEl.textContent) : 0;
+            const pct = totalCards ? Math.round((engine.menuProgress.completedCount / totalCards) * 100) : 0;
+
+            const pctEl = document.getElementById('menu-progress-pct');
+            const fillEl = document.getElementById('menu-progress-fill');
+            const captionEl = document.getElementById('menu-progress-caption-count');
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (fillEl) fillEl.style.width = pct + '%';
+            if (captionEl) captionEl.textContent = engine.menuProgress.completedCount + ' / ' + totalCards;
         }
 
         if (engine.finished && !engine.gameOver && engine.lastQuestionId) {
